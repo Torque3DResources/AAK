@@ -1,0 +1,8 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="cnst_maco_mat_face_diffusetex"
+    imageFile="@assetFile=cnst_maco_mat_face_diffusetex.png"
+    UseMips="true"
+    isHDRImage="false"
+    imageType="Albedo" />

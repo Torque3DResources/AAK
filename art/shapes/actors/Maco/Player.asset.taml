@@ -1,0 +1,5 @@
+<ShapeAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="Player"
+    fileName="@assetFile=player.dts" />

@@ -1,0 +1,8 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="DESERT_BRICK_BEVEL_TRIM"
+    imageFile="@assetFile=desert_brick_bevel_trim.jpg"
+    UseMips="true"
+    isHDRImage="false"
+    imageType="Albedo" />

@@ -1,0 +1,7 @@
+<ShapeAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="bridge_structure_start_foundation"
+    fileName="@assetFile=bridge_structure_start_foundation.dae"
+    materialSlot0="@Asset=AAK:DESERT_BRICK_VERTICAL_TRIM"
+    materialSlot1="@Asset=AAK:DESERT_BRICK_SQUARE_SANDY" />

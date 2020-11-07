@@ -1,0 +1,8 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="desert_brick_square_sandy_side"
+    imageFile="@assetFile=desert_brick_square_sandy_side.jpg"
+    UseMips="true"
+    isHDRImage="false"
+    imageType="Albedo" />

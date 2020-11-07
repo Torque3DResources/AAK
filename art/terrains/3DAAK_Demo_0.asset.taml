@@ -1,0 +1,5 @@
+<TerrainAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="3DAAK_Demo_0"
+    terrainFile="@assetFile=3DAAK_Demo_0.ter" />

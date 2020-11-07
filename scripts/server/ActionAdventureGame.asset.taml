@@ -1,0 +1,6 @@
+<ScriptAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="ActionAdventureGame"
+    scriptFile="@assetFile=ActionAdventureGame.cs"
+    VersionId="1" />

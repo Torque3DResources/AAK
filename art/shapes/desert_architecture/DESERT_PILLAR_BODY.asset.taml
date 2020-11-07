@@ -1,0 +1,8 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="DESERT_PILLAR_BODY"
+    imageFile="@assetFile=desert_pillar_body.jpg"
+    UseMips="true"
+    isHDRImage="false"
+    imageType="Albedo" />

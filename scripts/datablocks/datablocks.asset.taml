@@ -1,0 +1,14 @@
+<ScriptAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="soundsDatablock"
+    scriptFile="@assetFile=sounds.cs"
+    VersionId="1" />
+
+<ScriptAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="playerDatablock"
+    scriptFile="@assetFile=player.cs"
+    dependency0="@Asset=ActionAdventure:soundsDatablock"
+    VersionId="1" />

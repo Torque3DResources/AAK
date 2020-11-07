@@ -1,0 +1,8 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="blue_maco_mat_body_diffusetex"
+    imageFile="@assetFile=blue_maco_mat_body_diffusetex.png"
+    UseMips="true"
+    isHDRImage="false"
+    imageType="Albedo" />

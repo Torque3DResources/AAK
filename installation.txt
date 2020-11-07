@@ -1,0 +1,173 @@
+Needed source changes to integrate the AAK into T3D(until ECS is implemented):
+
+1) 
+In SceneObject::SceneObject()
+
+Add:
+mAllowPlayerClimb = true;
+mAllowPlayerLedgeGrab = true;
+mAllowPlayerWallHug = true;
+mCameraIgnores = false;
+
+To end of function.
+
+2)
+In SceneObject::initPersistFields()
+
+Add:
+addGroup("PlayerMoves");
+addField("allowPlayerClimb", TypeBool, Offset(mAllowPlayerClimb, SceneObject));
+addField("allowPlayerLedgeGrab", TypeBool, Offset(mAllowPlayerLedgeGrab, SceneObject));
+addField("allowPlayerWallHug", TypeBool, Offset(mAllowPlayerWallHug, SceneObject));
+endGroup("PlayerMoves");
+   
+addGroup("Camera");
+addField("cameraIgnores", TypeBool, Offset(mCameraIgnores, SceneObject));
+endGroup("Camera");
+
+To end of function
+
+3)
+In SceneObject::packUpdate()
+
+Add:
+stream->writeFlag(mAllowPlayerClimb);
+stream->writeFlag(mAllowPlayerLedgeGrab);
+stream->writeFlag(mAllowPlayerWallHug);
+stream->writeFlag(mCameraIgnores);
+
+To end of function, just before return
+
+4)
+In SceneObject::unpackUpdate()
+
+Add:
+mAllowPlayerClimb = stream->readFlag();
+mAllowPlayerLedgeGrab = stream->readFlag();
+mAllowPlayerWallHug = stream->readFlag();
+mCameraIgnores = stream->readFlag();
+
+To end of function
+
+5)
+In sceneObject.h
+
+Add:
+private:
+      bool mAllowPlayerClimb;
+      bool mAllowPlayerLedgeGrab;
+      bool mAllowPlayerWallHug;
+
+      bool mCameraIgnores;
+
+   public:
+      bool allowPlayerClimb() {return mAllowPlayerClimb;}
+      bool allowPlayerLedgeGrab() {return mAllowPlayerLedgeGrab;}
+      bool allowPlayerWallHug() {return mAllowPlayerWallHug;}
+
+      bool cameraIgnores() {return mCameraIgnores;}
+
+At the end of the SceneObject class definition
+
+6)
+In MoveList::getNextMove()
+
+Add:
+//-----------------------------------------------------------------------
+   // Ubiq: Transform the move vector so it's relative to the camera
+   // Only the 3DAAK Player class expects this, so don't do it unless
+   // the control object is a Player. This used to happen right in
+   // Player::updateMove() but it caused some network sync issues
+   // because cameras aren't Ghosted so clients couldn't interpret Moves.
+   //-----------------------------------------------------------------------
+   if(mConnection)
+   {
+      GameBase* control = mConnection->getControlObject();
+      if (control && (control->getTypeMask() & PlayerObjectType))
+      {
+         //get the camera's transform
+         F32 pos = 0.0f; MatrixF camTrans;
+         if(mConnection->getControlCameraTransform(pos, &camTrans))
+         {
+            //flatten the transform to X&Y (so when the camera
+            //is facing up/down the move remains horizontal)
+            camTrans[9] = 0;
+            camTrans.normalize();
+
+            //create a move vector and multiply by the camera transform
+            VectorF temp(curMove.x, curMove.y, 0); 
+            VectorF moveVec;
+            camTrans.mulV(temp, &moveVec);
+
+            curMove.x = moveVec.x;
+            curMove.y = moveVec.y;
+            curMove.z = moveVec.z;
+         }
+      }
+   }
+   //-----------------------------------------------------------------------
+
+Just after the line that says:
+curMove.z = MoveManager::mUpAction - MoveManager::mDownAction;
+
+7) 
+Same function. Find the line that says:
+if(MoveManager::mTriggerCount[i] & 1)
+   curMove.trigger[i] = true;
+
+And replace it with:
+
+if(MoveManager::mTriggerCount[i] & 1)
+{
+         curMove.trigger[i] = true;
+
+         //Ubiq: special case for jump trigger:
+         if(i == 2)
+         {
+            //reset trigger count here so that jump trigger
+            //is only "pulsed" for 1 tick when key pressed
+            //(player must release and press again to jump again)
+            //in script set it like this: $mvTriggerCount2 = %val;
+            MoveManager::mTriggerCount[i] = 0;
+         }
+      }
+
+
+8)
+In AIPlayer::getAIMove()
+
+Find:
+Point3F newMove;
+         MatrixF moveMatrix;
+         moveMatrix.set(EulerF(0.0f, 0.0f, -(rotation.z + movePtr->yaw)));
+         moveMatrix.mulV( Point3F( movePtr->x, movePtr->y, 0.0f ), &newMove );
+         movePtr->x = newMove.x;
+         movePtr->y = newMove.y;
+
+And comment it out
+
+9)
+In TSStatic::TSStatic()
+
+Set mAllowPlayerStep to be true
+
+10)
+In void getAnglesFromVector( const VectorF &vec, F32 &yawAng, F32 &pitchAng )
+replace the internals of the function with:
+
+//Yaw
+	yawAng = mAtan2( vec.x, vec.y );
+	if( yawAng < 0.0f )
+		yawAng += M_2PI_F;
+
+	//Pitch
+	F32 XYdist = mSqrt((vec.x * vec.x) + (vec.y * vec.y));
+	F32 vert = vec.z / XYdist;
+	pitchAng = mAtan2( vert, 1.0f);
+
+11)
+If using the AAK art, you may need to bump up the maximum skinned character bone count.
+Find:
+U32 TSShape::smMaxSkinBones = 70;
+
+And change it to 100

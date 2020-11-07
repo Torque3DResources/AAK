@@ -1,0 +1,8 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="DEAD_BRANCH01"
+    imageFile="@assetFile=dead_branch01.jpg"
+    UseMips="true"
+    isHDRImage="false"
+    imageType="Albedo" />

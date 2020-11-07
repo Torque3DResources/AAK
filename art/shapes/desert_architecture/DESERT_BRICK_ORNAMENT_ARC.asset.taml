@@ -1,0 +1,8 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="DESERT_BRICK_ORNAMENT_ARC"
+    imageFile="@assetFile=desert_brick_ornament_arc.jpg"
+    UseMips="true"
+    isHDRImage="false"
+    imageType="Albedo" />
