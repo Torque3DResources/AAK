@@ -33,6 +33,7 @@
 #include "T3D/player.h"
 #include "gfx/sim/debugDraw.h"
 //----------------------------------------------------------------------------
+static bool sRenderCameraGoalRays = false;
 
 IMPLEMENT_CO_DATABLOCK_V1(CameraGoalPlayerData);
 
@@ -155,7 +156,13 @@ CameraGoalPlayer::~CameraGoalPlayer()
 {
 
 }
-
+void CameraGoalPlayer::consoleInit()
+{
+   Con::addVariable("$CameraGoalPlayer::renderCameraGoalRays", TypeBool, &sRenderCameraGoalRays,
+      "@brief Determines if the cameraGoal's collision interaction rays should be rendered.\n\n"
+      "This is mainly used for the tools and debugging.\n"
+      "@ingroup GameObjects\n");
+}
 
 //----------------------------------------------------------------------------
 
@@ -242,8 +249,11 @@ void CameraGoalPlayer::getCameraTransform(F32* pos, MatrixF* mat)
 			if(!rInfo.object->cameraIgnores())
 			{
 				#ifdef ENABLE_DEBUGDRAW
-				DebugDrawer::get()->drawLine(pts[i], pts[i] + forward, ColorI::RED); 
-            DebugDrawer::get()->setLastTTL(TickMs);
+            if (sRenderCameraGoalRays)
+            {
+               DebugDrawer::get()->drawLine(pts[i], pts[i] + forward, ColorI::RED);
+               DebugDrawer::get()->setLastTTL(TickMs);
+            }
 				#endif
 
 				//did this one hit closer?
@@ -254,8 +264,11 @@ void CameraGoalPlayer::getCameraTransform(F32* pos, MatrixF* mat)
 		else
 		{
 			#ifdef ENABLE_DEBUGDRAW
-			DebugDrawer::get()->drawLine(pts[i], pts[i] + forward, ColorI::GREEN); 
-         DebugDrawer::get()->setLastTTL(TickMs);
+         if (sRenderCameraGoalRays)
+         {
+            DebugDrawer::get()->drawLine(pts[i], pts[i] + forward, ColorI::GREEN);
+            DebugDrawer::get()->setLastTTL(TickMs);
+         }
 			#endif
 		}
 	}
@@ -554,10 +567,13 @@ void CameraGoalPlayer::processTick(const Move* move)
 
 
 		#ifdef ENABLE_DEBUGDRAW
-		DebugDrawer::get()->drawBox(mPlayerPos - Point3F(.1f,.1f,.1f), mPlayerPos + Point3F(.1f,.1f,.1f), ColorI::GREEN); 
-      DebugDrawer::get()->setLastTTL(TickMs);
-		DebugDrawer::get()->drawLine(mPlayerPos, mPosition, ColorI::GREEN);
-      DebugDrawer::get()->setLastTTL(TickMs);
+      if (sRenderCameraGoalRays)
+      {
+         DebugDrawer::get()->drawBox(mPlayerPos - Point3F(.1f, .1f, .1f), mPlayerPos + Point3F(.1f, .1f, .1f), ColorI::GREEN);
+         DebugDrawer::get()->setLastTTL(TickMs);
+         DebugDrawer::get()->drawLine(mPlayerPos, mPosition, ColorI::GREEN);
+         DebugDrawer::get()->setLastTTL(TickMs);
+      }
 		#endif
 	}
 
@@ -616,11 +632,14 @@ void CameraGoalPlayer::autoPitch()
 			//now cast down from start to end to find the ground
 			if(getContainer()->castRay(start, end, StaticObjectType, &rInfo))
 			{
-				/* //debug lines
+            /* //debug lines
 				#ifdef ENABLE_DEBUGDRAW
-				gDebugDraw->drawLine(start, rInfo.point, ColorF(1,0,0)); gDebugDraw->setLastTTL(TickMs);
-				gDebugDraw->drawLine(rInfo.point, end, ColorF(0,0,1)); gDebugDraw->setLastTTL(TickMs);
-				gDebugDraw->drawLine(playerPos, rInfo.point, ColorF(1,0,1)); gDebugDraw->setLastTTL(TickMs);
+            if (sRenderCameraGoalRays)
+            {
+               gDebugDraw->drawLine(start, rInfo.point, ColorF(1, 0, 0)); gDebugDraw->setLastTTL(TickMs);
+               gDebugDraw->drawLine(rInfo.point, end, ColorF(0, 0, 1)); gDebugDraw->setLastTTL(TickMs);
+               gDebugDraw->drawLine(playerPos, rInfo.point, ColorF(1, 0, 1)); gDebugDraw->setLastTTL(TickMs);
+            }
 				#endif
 				*/
 
@@ -788,8 +807,11 @@ bool CameraGoalPlayer::viewClear(Point3F from)
 	for(U32 i = 0; i < 3; i++)
 	{
 		#ifdef ENABLE_DEBUGDRAW
-		DebugDrawer::get()->drawLine(pts[i] + vec, pts[i], ColorI::GREEN);
-      DebugDrawer::get()->setLastTTL(TickMs);
+      if (sRenderCameraGoalRays)
+      {
+         DebugDrawer::get()->drawLine(pts[i] + vec, pts[i], ColorI::GREEN);
+         DebugDrawer::get()->setLastTTL(TickMs);
+      }
 		#endif
 
 		if(getContainer()->castRay(pts[i] + vec, pts[i], StaticObjectType, &rInfo))
@@ -1073,16 +1095,22 @@ F32 CameraGoalPlayer::findAutoYaw()
 		if(getContainer()->castRay(start, end, StaticObjectType, &rinfo))
 		{
 #ifdef ENABLE_DEBUGDRAW
-         DebugDrawer::get()->drawLine(start, end, ColorI::GREEN);
-			DebugDrawer::get()->setLastTTL(TickMs);
+         if (sRenderCameraGoalRays)
+         {
+            DebugDrawer::get()->drawLine(start, end, ColorI::GREEN);
+            DebugDrawer::get()->setLastTTL(TickMs);
+         }
 #endif
 
 			averageNormal += rinfo.normal;
 			hits++;
 		}
 #ifdef ENABLE_DEBUGDRAW
-		DebugDrawer::get()->drawLine(start, end, ColorI::RED);
-		DebugDrawer::get()->setLastTTL(TickMs);
+      if (sRenderCameraGoalRays)
+      {
+         DebugDrawer::get()->drawLine(start, end, ColorI::RED);
+         DebugDrawer::get()->setLastTTL(TickMs);
+      }
 #endif
 	}
 
