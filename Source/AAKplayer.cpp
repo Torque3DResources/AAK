@@ -228,6 +228,41 @@ AAKPlayerData::ActionAnimationDef AAKPlayerData::ActionAnimationList[NumTableAct
 	{ "slideback" },	// SlideBackAnim
 };
 
+typedef AAKPlayerData::Sounds aakPlayerSoundsEnum;
+DefineEnumType(aakPlayerSoundsEnum);
+
+ImplementEnumType(aakPlayerSoundsEnum, "enum types.\n"
+   "@ingroup PlayerData\n\n")
+   { aakPlayerSoundsEnum::stop, "stop", "..." },
+   { aakPlayerSoundsEnum::jumpCrouch, "jumpCrouch", "..." },
+   { aakPlayerSoundsEnum::land, "land", "..." },
+   { aakPlayerSoundsEnum::climbIdle, "climbIdle", "..." },
+   { aakPlayerSoundsEnum::climbUp, "climbUp", "..." },
+   { aakPlayerSoundsEnum::climbDown, "climbDown", "..." },
+   { aakPlayerSoundsEnum::climbLeftRight, "climbLeftRight", "..." },
+   { aakPlayerSoundsEnum::ledgeIdle, "ledgeIdle", "..." },
+   { aakPlayerSoundsEnum::ledgeUp, "ledgeUp", "..." },
+   { aakPlayerSoundsEnum::ledgeLeftRight, "ledgeLeftRight", "..." },
+   { aakPlayerSoundsEnum::slide, "slide", "..." },
+   { aakPlayerSoundsEnum::FootSoft, "FootSoft", "..." },
+   { aakPlayerSoundsEnum::FootHard,            "FootHard","..." },
+   { aakPlayerSoundsEnum::FootMetal,           "FootMetal","..." },
+   { aakPlayerSoundsEnum::FootSnow,            "FootSnow","..." },
+   { aakPlayerSoundsEnum::FootShallowSplash,   "FootShallowSplash","..." },
+   { aakPlayerSoundsEnum::FootWading,          "FootWading","..." },
+   { aakPlayerSoundsEnum::FootUnderWater,      "FootUnderWater","..." },
+   { aakPlayerSoundsEnum::FootBubbles,         "FootBubbles","..." },
+   { aakPlayerSoundsEnum::MoveBubbles,         "MoveBubbles","..." },
+   { aakPlayerSoundsEnum::WaterBreath,         "WaterBreath","..." },
+   { aakPlayerSoundsEnum::ImpactSoft,          "ImpactSoft","..." },
+   { aakPlayerSoundsEnum::ImpactHard,          "ImpactHard","..." },
+   { aakPlayerSoundsEnum::ImpactMetal,         "ImpactMetal","..." },
+   { aakPlayerSoundsEnum::ImpactSnow,          "ImpactSnow","..." },
+   { aakPlayerSoundsEnum::ImpactWaterEasy,     "ImpactWaterEasy","..." },
+   { aakPlayerSoundsEnum::ImpactWaterMedium,   "ImpactWaterMedium","..." },
+   { aakPlayerSoundsEnum::ImpactWaterHard,     "ImpactWaterHard","..." },
+   { aakPlayerSoundsEnum::ExitWater,           "ExitWater","..." },
+      EndImplementEnumType;
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
@@ -315,7 +350,7 @@ AAKPlayerData::AAKPlayerData()
    imageAnimPrefixFP = StringTable->EmptyString();
    for (U32 i=0; i<ShapeBase::MaxMountedImages; ++i)
    {
-      shapeNameFP[i] = StringTable->EmptyString();
+      INIT_ASSET_ARRAY(ShapeFP, i);
       mCRCFP[i] = 0;
       mValidShapeFP[i] = false;
    }
@@ -432,7 +467,7 @@ AAKPlayerData::AAKPlayerData()
    boxHeadFrontPercentage = 1;
 
    for (S32 i = 0; i < MaxSounds; i++)
-      sound[i] = NULL;
+      INIT_ASSET_ARRAY(PlayerSound, i);
 
    footPuffEmitter = NULL;
    footPuffID = 0;
@@ -531,14 +566,13 @@ bool AAKPlayerData::preload(bool server, String &errorStr)
    if(!Parent::preload(server, errorStr))
       return false;
 
-   // Resolve objects transmitted from server
-   if( !server )
+   for (U32 i = 0; i < MaxSounds; ++i)
    {
-      for( U32 i = 0; i < MaxSounds; ++ i )
+      _setPlayerSound(getPlayerSound(i), i);
+      if (getPlayerSound(i) != StringTable->EmptyString())
       {
-         String sfxErrorStr;
-         if( !sfxResolve( &sound[ i ], sfxErrorStr ) )
-            Con::errorf( "AAKPlayerData::preload: %s", sfxErrorStr.c_str() );
+         if (!getPlayerSoundProfile(i))
+            Con::errorf("AAKPlayerData::Preload() - unable to find sfxProfile for asset %d %s", i, mPlayerSoundAssetId[i]);
       }
    }
 
@@ -677,12 +711,12 @@ bool AAKPlayerData::preload(bool server, String &errorStr)
    {
       bool shapeError = false;
 
-      if (shapeNameFP[i] && shapeNameFP[i][0])
+      if (mShapeFPName[i] && mShapeFPName[i][0])
       {
-         mShapeFP[i] = ResourceManager::get().load(shapeNameFP[i]);
+         mShapeFP[i] = ResourceManager::get().load(mShapeFPName[i]);
          if (bool(mShapeFP[i]) == false)
          {
-            errorStr = String::ToString("AAKPlayerData: Couldn't load mounted image %d shape \"%s\"",i,shapeNameFP[i]);
+            errorStr = String::ToString("AAKPlayerData: Couldn't load mounted image %d shape \"%s\"",i, mShapeFPName[i]);
             return false;
          }
 
@@ -691,7 +725,7 @@ bool AAKPlayerData::preload(bool server, String &errorStr)
 
          if(computeCRC)
          {
-            Con::printf("Validation required for mounted image %d shape: %s", i, shapeNameFP[i]);
+            Con::printf("Validation required for mounted image %d shape: %s", i, mShapeFPName[i]);
 
             Torque::FS::FileNodeRef    fileRef = Torque::FS::GetFileNode(mShapeFP[i].getPath());
 
@@ -705,7 +739,7 @@ bool AAKPlayerData::preload(bool server, String &errorStr)
                mCRCFP[i] = fileRef->getChecksum();
             else if(mCRCFP[i] != fileRef->getChecksum())
             {
-               errorStr = String::ToString("AAKPlayerData: Mounted image %d shape \"%s\" does not match version on server.",i,shapeNameFP[i]);
+               errorStr = String::ToString("AAKPlayerData: Mounted image %d shape \"%s\" does not match version on server.",i,mShapeFPName[i]);
                return false;
             }
          }
@@ -1143,91 +1177,7 @@ void AAKPlayerData::initPersistFields()
    endGroup( "Interaction: Footsteps" );
 
    addGroup( "Interaction: Sounds" );
-
-      addField( "FootSoftSound", TypeSFXTrackName, Offset(sound[FootSoft], AAKPlayerData),
-         "@brief Sound to play when walking on a surface with Material footstepSoundId 0.\n\n" );
-      addField( "FootHardSound", TypeSFXTrackName, Offset(sound[FootHard], AAKPlayerData),
-         "@brief Sound to play when walking on a surface with Material footstepSoundId 1.\n\n" );
-      addField( "FootMetalSound", TypeSFXTrackName, Offset(sound[FootMetal], AAKPlayerData),
-         "@brief Sound to play when walking on a surface with Material footstepSoundId 2.\n\n" );
-      addField( "FootSnowSound", TypeSFXTrackName, Offset(sound[FootSnow], AAKPlayerData),
-         "@brief Sound to play when walking on a surface with Material footstepSoundId 3.\n\n" );
-
-      addField( "FootShallowSound", TypeSFXTrackName, Offset(sound[FootShallowSplash], AAKPlayerData),
-         "@brief Sound to play when walking in water and coverage is less than "
-         "footSplashHeight.\n\n"
-         "@see footSplashHeight\n" );
-      addField( "FootWadingSound", TypeSFXTrackName, Offset(sound[FootWading], AAKPlayerData),
-         "@brief Sound to play when walking in water and coverage is less than 1, "
-         "but > footSplashHeight.\n\n"
-         "@see footSplashHeight\n" );
-      addField( "FootUnderwaterSound", TypeSFXTrackName, Offset(sound[FootUnderWater], AAKPlayerData),
-         "@brief Sound to play when walking in water and coverage equals 1.0 "
-         "(fully underwater).\n\n" );
-      addField( "FootBubblesSound", TypeSFXTrackName, Offset(sound[FootBubbles], AAKPlayerData),
-         "@brief Sound to play when walking in water and coverage equals 1.0 "
-         "(fully underwater).\n\n" );
-      addField( "movingBubblesSound", TypeSFXTrackName, Offset(sound[MoveBubbles], AAKPlayerData),
-         "@brief Sound to play when in water and coverage equals 1.0 (fully underwater).\n\n"
-         "Note that unlike FootUnderwaterSound, this sound plays even if the "
-         "player is not moving around in the water.\n" );
-      addField( "waterBreathSound", TypeSFXTrackName, Offset(sound[WaterBreath], AAKPlayerData),
-         "@brief Sound to play when in water and coverage equals 1.0 (fully underwater).\n\n"
-         "Note that unlike FootUnderwaterSound, this sound plays even if the "
-         "player is not moving around in the water.\n" );
-
-      addField( "impactSoftSound", TypeSFXTrackName, Offset(sound[ImpactSoft], AAKPlayerData),
-         "@brief Sound to play after falling on a surface with Material footstepSoundId 0.\n\n" );
-      addField( "impactHardSound", TypeSFXTrackName, Offset(sound[ImpactHard], AAKPlayerData),
-         "@brief Sound to play after falling on a surface with Material footstepSoundId 1.\n\n" );
-      addField( "impactMetalSound", TypeSFXTrackName, Offset(sound[ImpactMetal], AAKPlayerData),
-         "@brief Sound to play after falling on a surface with Material footstepSoundId 2.\n\n" );
-      addField( "impactSnowSound", TypeSFXTrackName, Offset(sound[ImpactSnow], AAKPlayerData),
-         "@brief Sound to play after falling on a surface with Material footstepSoundId 3.\n\n" );
-
-      addField( "impactWaterEasy", TypeSFXTrackName, Offset(sound[ImpactWaterEasy], AAKPlayerData),
-         "@brief Sound to play when entering the water with velocity < "
-         "mediumSplashSoundVelocity.\n\n"
-         "@see mediumSplashSoundVelocity\n");
-      addField( "impactWaterMedium", TypeSFXTrackName, Offset(sound[ImpactWaterMedium], AAKPlayerData),
-         "@brief Sound to play when entering the water with velocity >= "
-         "mediumSplashSoundVelocity and < hardSplashSoundVelocity.\n\n"
-         "@see mediumSplashSoundVelocity\n"
-         "@see hardSplashSoundVelocity\n");
-      addField( "impactWaterHard", TypeSFXTrackName, Offset(sound[ImpactWaterHard], AAKPlayerData),
-         "@brief Sound to play when entering the water with velocity >= "
-         "hardSplashSoundVelocity.\n\n"
-         "@see hardSplashSoundVelocity\n");
-      addField( "exitingWater", TypeSFXTrackName, Offset(sound[ExitWater], AAKPlayerData),
-         "@brief Sound to play when exiting the water with velocity >= exitSplashSoundVelocity.\n\n"
-         "@see exitSplashSoundVelocity\n");
-
-	  //Ubiq Player Sounds:
-	  addField("stopSound", TypeSFXTrackName, Offset(sound[stop], AAKPlayerData),
-		  "@brief Sound to play when stopping suddenly.\n\n");
-	  addField("jumpCrouchSound", TypeSFXTrackName, Offset(sound[jumpCrouch], AAKPlayerData),
-		  "@brief Sound to play when crouching before a jump.\n\n");
-	  addField("jumpSound", TypeSFXTrackName, Offset(sound[jump], AAKPlayerData),
-		  "@brief Sound to play when leaving the ground for a jump.\n\n");
-	  addField("landSound", TypeSFXTrackName, Offset(sound[land], AAKPlayerData),
-		  "@brief Sound to play when landing after a jump or fall.\n\n");
-	  addField("climbIdleSound", TypeSFXTrackName, Offset(sound[climbIdle],	AAKPlayerData),
-		  "@brief Sound to play when Trigger 3 occurs during the climb idle animation.\n\n");
-	  addField("climbUpSound", TypeSFXTrackName, Offset(sound[climbUp],	AAKPlayerData),
-		  "@brief Sound to play when Trigger 3 occurs during the climb up animation.\n\n");
-	  addField("climbDownSound", TypeSFXTrackName, Offset(sound[climbDown], AAKPlayerData),
-		  "@brief Sound to play when Trigger 3 occurs during the climb down animation.\n\n");
-	  addField("climbLeftRightSound", TypeSFXTrackName, Offset(sound[climbLeftRight], AAKPlayerData),
-		  "@brief Sound to play when Trigger 3 occurs during the climb left or right animations.\n\n");
-	  addField("ledgeIdleSound", TypeSFXTrackName, Offset(sound[ledgeIdle],	AAKPlayerData),
-		  "@brief Sound to play when Trigger 3 occurs during the ledge idle animation.\n\n");
-	  addField("ledgeLeftRightSound", TypeSFXTrackName, Offset(sound[ledgeLeftRight], AAKPlayerData),
-		  "@brief Sound to play when Trigger 3 occurs during the ledge left or right animations.\n\n");
-	  addField("ledgeUpSound", TypeSFXTrackName, Offset(sound[ledgeUp],	AAKPlayerData),
-		  "@brief Sound to play when Trigger 3 occurs during the ledge up animation.\n\n");
-	  addField("slideSound", TypeSFXTrackName, Offset(sound[slide],	AAKPlayerData),
-		  "@brief Sound to play when sliding down or scraping across a surface. Should be loopable.\n\n");
-
+   INITPERSISTFIELD_SOUNDASSET_ENUMED(PlayerSound, aakPlayerSoundsEnum, AAKPlayerData::Sounds::MaxSounds, AAKPlayerData, "Sounds related to player interaction.");
    endGroup( "Interaction: Sounds" );
 
    addGroup( "Interaction: Splashes" );
@@ -1313,11 +1263,16 @@ void AAKPlayerData::initPersistFields()
       // Mounted images arrays
       addArray( "Mounted Images", ShapeBase::MaxMountedImages );
 
-         addField( "shapeNameFP", TypeShapeFilename, Offset(shapeNameFP, AAKPlayerData), ShapeBase::MaxMountedImages,
-            "@brief File name of this player's shape that will be used in conjunction with the corresponding mounted image.\n\n"
-            "These optional parameters correspond to each mounted image slot to indicate a shape that is rendered "
-            "in addition to the mounted image shape.  Typically these are a player's arms (or arm) that is "
-            "animated along with the mounted image's state animation sequences.\n");
+      INITPERSISTFIELD_SHAPEASSET_ARRAY(ShapeFP, ShapeBase::MaxMountedImages, AAKPlayerData, "@brief File name of this player's shape that will be used in conjunction with the corresponding mounted image.\n\n"
+         "These optional parameters correspond to each mounted image slot to indicate a shape that is rendered "
+         "in addition to the mounted image shape.  Typically these are a player's arms (or arm) that is "
+         "animated along with the mounted image's state animation sequences.\n");
+
+      addProtectedField("shapeNameFP", TypeShapeFilename, Offset(mShapeFPName, AAKPlayerData), &_setShapeFPData, &defaultProtectedGetFn, ShapeBase::MaxMountedImages,
+         "@brief File name of this player's shape that will be used in conjunction with the corresponding mounted image.\n\n"
+         "These optional parameters correspond to each mounted image slot to indicate a shape that is rendered "
+         "in addition to the mounted image shape.  Typically these are a player's arms (or arm) that is "
+         "animated along with the mounted image's state animation sequences.\n", AbstractClassRep::FIELD_HideInInspectors);
 
       endArray( "Mounted Images" );
 
@@ -1502,8 +1457,8 @@ void AAKPlayerData::packData(BitStream* stream)
    stream->write(minImpactSpeed);
    stream->write(minLateralImpactSpeed);
 
-   for( U32 i = 0; i < MaxSounds; i++)
-      sfxWrite( stream, sound[ i ] );
+   for (U32 i = 0; i < MaxSounds; i++)
+      PACKDATA_ASSET_ARRAY(PlayerSound, i);
 
    mathWrite(*stream, boxSize);
    mathWrite(*stream, crouchBoxSize);
@@ -1571,7 +1526,7 @@ void AAKPlayerData::packData(BitStream* stream)
    stream->writeString(imageAnimPrefixFP);
    for (U32 i=0; i<ShapeBase::MaxMountedImages; ++i)
    {
-      stream->writeString(shapeNameFP[i]);
+      PACKDATA_ASSET_ARRAY(ShapeFP, i);
 
       // computeCRC is handled in ShapeBaseData
       if (computeCRC)
@@ -1737,8 +1692,8 @@ void AAKPlayerData::unpackData(BitStream* stream)
    stream->read(&minImpactSpeed);
    stream->read(&minLateralImpactSpeed);
 
-   for( U32 i = 0; i < MaxSounds; i++)
-      sfxRead( stream, &sound[ i ] );
+   for (U32 i = 0; i < MaxSounds; i++)
+      UNPACKDATA_ASSET_ARRAY(PlayerSound, i);
 
    mathRead(*stream, &boxSize);
    mathRead(*stream, &crouchBoxSize);
@@ -1805,7 +1760,7 @@ void AAKPlayerData::unpackData(BitStream* stream)
    imageAnimPrefixFP = stream->readSTString();
    for (U32 i=0; i<ShapeBase::MaxMountedImages; ++i)
    {
-      shapeNameFP[i] = stream->readSTString();
+      UNPACKDATA_ASSET_ARRAY(ShapeFP, i);
 
       // computeCRC is handled in ShapeBaseData
       if (computeCRC)
@@ -2294,14 +2249,14 @@ bool AAKPlayer::onNewDataBlock( GameBaseData *dptr, bool reload )
       SFX_DELETE( mWaterBreathSound );
       SFX_DELETE( mSlideSound );
 
-      if ( mDataBlock->sound[AAKPlayerData::MoveBubbles] )
-         mMoveBubbleSound = SFX->createSource( mDataBlock->sound[AAKPlayerData::MoveBubbles] );
+      if (mDataBlock->getPlayerSound(AAKPlayerData::MoveBubbles))
+         mMoveBubbleSound = SFX->createSource(mDataBlock->getPlayerSoundProfile(AAKPlayerData::MoveBubbles));
 
-      if ( mDataBlock->sound[AAKPlayerData::WaterBreath] )
-         mWaterBreathSound = SFX->createSource( mDataBlock->sound[AAKPlayerData::WaterBreath] );
+      if (mDataBlock->getPlayerSound(AAKPlayerData::WaterBreath))
+         mWaterBreathSound = SFX->createSource(mDataBlock->getPlayerSoundProfile(AAKPlayerData::WaterBreath));
 
-      if ( mDataBlock->sound[AAKPlayerData::slide] )
-         mSlideSound = SFX->createSource( mDataBlock->sound[AAKPlayerData::slide] );
+      if (mDataBlock->getPlayerSound(AAKPlayerData::slide))
+         mSlideSound = SFX->createSource(mDataBlock->getPlayerSoundProfile(AAKPlayerData::slide));
    }
 
    mObjBox.maxExtents.x = mDataBlock->boxSize.x * 0.5f;
@@ -3291,7 +3246,7 @@ void AAKPlayer::updateMove(const Move* move)
 		}
 
 		//play sound effects on client
-		if(isGhost()) SFX->playOnce( mDataBlock->sound[ AAKPlayerData::land ], &getTransform() );
+      if (isGhost()) SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::land), &getTransform());
 	}
 
 	//Ubiq: Not wall hugging?
@@ -3976,7 +3931,7 @@ void AAKPlayer::updateMove(const Move* move)
 			setActionThread(AAKPlayerData::StopAnim,true,false,true);
 
 			//play sound effects on client
-			if(isGhost()) SFX->playOnce( mDataBlock->sound[ AAKPlayerData::stop ], &getTransform() );
+         if (isGhost()) SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::stop), &getTransform());
 		}
 
 		if(mActionAnimation.action == AAKPlayerData::StopAnim
@@ -4101,33 +4056,33 @@ void AAKPlayer::updateMove(const Move* move)
 	
 	//Ubiq: Lorne: Enter the jump state?
 	if (move->trigger[sJumpTrigger] && !isMounted() && canJump())
-	{
-		//If we have directional input or if we're running, this will be a run-jump
-		if(moveVec.len() > 0 || mVelocity.len() > 3.0f)
-		{
-			//enter the jump state
-			mJumpState.active = true;
-			mJumpState.isCrouching = true;
-			mJumpState.crouchDelay = mDataBlock->runJumpCrouchDelay;
-			mJumpState.jumpType = JumpType_Run;
-		}
+      {
+         //If we have directional input or if we're running, this will be a run-jump
+         if (moveVec.len() > 0 || mVelocity.len() > 3.0f)
+         {
+            //enter the jump state
+            mJumpState.active = true;
+            mJumpState.isCrouching = true;
+            mJumpState.crouchDelay = mDataBlock->runJumpCrouchDelay;
+            mJumpState.jumpType = JumpType_Run;
+         }
 
-		//If no directional input and we're at walking speed (or stopped), this will be a stand-jump
-		else
-		{
-			//enter the jump state
-			mJumpState.active = true;
-			mJumpState.isCrouching = true;
-			mJumpState.crouchDelay = mDataBlock->standJumpCrouchDelay;
-			mJumpState.jumpType = JumpType_Stand;
-		}
+         //If no directional input and we're at walking speed (or stopped), this will be a stand-jump
+         else
+         {
+            //enter the jump state
+            mJumpState.active = true;
+            mJumpState.isCrouching = true;
+            mJumpState.crouchDelay = mDataBlock->standJumpCrouchDelay;
+            mJumpState.jumpType = JumpType_Stand;
+         }
 
-		//play crouch sound for jump
-		if(isGhost()) SFX->playOnce( mDataBlock->sound[ AAKPlayerData::jumpCrouch ], &getTransform() );
+         //play crouch sound for jump
+         if (isGhost()) SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::jumpCrouch), &getTransform());
 
-		//cancel any playing animations
-		mActionAnimation.action = AAKPlayerData::NullAnimation;
-	}
+         //cancel any playing animations
+         mActionAnimation.action = AAKPlayerData::NullAnimation;
+      }
 	else
 	{
 		if (mJumpSurface) 
@@ -4146,7 +4101,7 @@ void AAKPlayer::updateMove(const Move* move)
    // make the player character jump.
    //if (move->trigger[sJumpTrigger] && canJump() && !isAnimationLocked() && mJumpState.active && mJumpState.isCrouching)
    if(mJumpState.active && mJumpState.isCrouching)
-   {      
+   {
         mJumpState.crouchDelay -= TickMs;
 
 		if(mJumpState.jumpType == JumpType_Stand)
@@ -4222,8 +4177,7 @@ void AAKPlayer::updateMove(const Move* move)
          mJumpSurfaceLastContact = JumpSkipContactsMax;
 
          //play jump sound
-		   if(isGhost()) 
-            SFX->playOnce( mDataBlock->sound[ AAKPlayerData::jump ], &getTransform() );
+         if (isGhost()) SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::jump), &getTransform());
 
          // Flag the jump event trigger.
          fx_s_triggers |= PLAYER_JUMP_S_TRIGGER;
@@ -4322,7 +4276,7 @@ void AAKPlayer::updateMove(const Move* move)
          F32 currHeight = getPosition().z;
          const F32 C = 2.0f;
          const F32 M = 0.1f;
-         
+
          if ( currHeight + mVelocity.z * TickSec * C > mLiquidHeight )
             buoyancyForce *= M;
                   
@@ -4331,7 +4285,7 @@ void AAKPlayer::updateMove(const Move* move)
    }
 
    // Apply drag
-   if ( mSwimming )
+   if (mSwimming)
       mVelocity -= mVelocity * mDrag * TickSec * ( mVelocity.len() / mDataBlock->maxUnderwaterForwardSpeed );
    else
       mVelocity -= mVelocity * mDrag * TickSec;
@@ -4372,8 +4326,8 @@ void AAKPlayer::updateMove(const Move* move)
       else
       {
          // exit-water splash sound happens for client only
-         if ( getSpeed() >= mDataBlock->exitSplashSoundVel && !isMounted() )         
-            SFX->playOnce( mDataBlock->sound[AAKPlayerData::ExitWater], &getTransform() );                     
+         if ( getSpeed() >= mDataBlock->exitSplashSoundVel && !isMounted() )
+            SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::ExitWater), &getTransform());
       }
    }
 
@@ -4983,43 +4937,43 @@ void AAKPlayer::updateActionThread()
 			//climb idle
 			if(mActionAnimation.action == AAKPlayerData::ClimbIdleAnim)
 			{
-				SFX->playOnce( mDataBlock->sound[ AAKPlayerData::climbIdle ], &getTransform() );
+            SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::climbIdle), &getTransform());
 			}
 
 			//climb up
 			if(mActionAnimation.action == AAKPlayerData::ClimbUpAnim)
 			{
-				SFX->playOnce( mDataBlock->sound[ AAKPlayerData::climbUp ], &getTransform() );
+            SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::climbUp), &getTransform());
 			}
 
 			//climb left or right
 			if(mActionAnimation.action == AAKPlayerData::ClimbLeftAnim || mActionAnimation.action == AAKPlayerData::ClimbRightAnim)
 			{
-				SFX->playOnce( mDataBlock->sound[ AAKPlayerData::climbLeftRight ], &getTransform() );
+            SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::climbLeftRight), &getTransform());
 			}
 
 			//climb down
 			if(mActionAnimation.action == AAKPlayerData::ClimbDownAnim)
 			{
-				SFX->playOnce( mDataBlock->sound[ AAKPlayerData::climbDown ], &getTransform() );
+            SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::climbDown), &getTransform());
 			}
 
 			//ledge idle
 			if(mActionAnimation.action == AAKPlayerData::LedgeIdleAnim)
 			{
-				SFX->playOnce( mDataBlock->sound[ AAKPlayerData::ledgeIdle ], &getTransform() );
+            SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::ledgeIdle), &getTransform());
 			}
 
 			//ledge left or right
 			if(mActionAnimation.action == AAKPlayerData::LedgeLeftAnim || mActionAnimation.action == AAKPlayerData::LedgeRightAnim)
 			{
-				SFX->playOnce( mDataBlock->sound[ AAKPlayerData::ledgeLeftRight ], &getTransform() );
+            SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::ledgeLeftRight), &getTransform());
 			}
 
 			//ledge up
 			if(mActionAnimation.action == AAKPlayerData::LedgeUpAnim)
 			{
-				SFX->playOnce( mDataBlock->sound[ AAKPlayerData::ledgeUp ], &getTransform() );
+            SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::ledgeUp), &getTransform());
 			}
 		}
 	}
@@ -8479,21 +8433,21 @@ void AAKPlayer::playFootstepSound( bool triggeredLeft, Material* contactMaterial
    if( mWaterCoverage > 0.0 && mWaterCoverage < 1.0 )
    {
       if ( mWaterCoverage < mDataBlock->footSplashHeight )
-		 SFX->playOnce( mDataBlock->sound[ AAKPlayerData::FootShallowSplash ], &getTransform() );
+         SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::FootShallowSplash), &getTransform());
       else
-		 SFX->playOnce( mDataBlock->sound[ AAKPlayerData::FootWading ], &getTransform() );
+         SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::FootWading), &getTransform());
    }
 
    if (mWaterCoverage >= 1.0)
    {
 	   if ( triggeredLeft )
 	   {
-		   SFX->playOnce( mDataBlock->sound[ AAKPlayerData::FootUnderWater ], &getTransform() );
-		   SFX->playOnce( mDataBlock->sound[ AAKPlayerData::FootBubbles ], &getTransform() );
+         SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::FootUnderWater), &getTransform());
+         SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::FootBubbles), &getTransform());
 	   }
    }
 
-   else if( contactMaterial && contactMaterial->mFootstepSoundCustom )
+   else if( contactMaterial && contactMaterial->isCustomFootstepSoundValid())
    {
       // Footstep sound defined on material.
       //Ubiq: set volume and pitch based on player velocity (landing is always max volume)
@@ -8503,7 +8457,7 @@ void AAKPlayer::playFootstepSound( bool triggeredLeft, Material* contactMaterial
       F32 volume = speedFactor;
       F32 pitch = (0.85f * (1.0f - speedFactor)) + (1.15f * speedFactor); //map (0 - 1) to (0.85 - 1.15)
       
-      SFXSource* source = SFX->createSource(contactMaterial->mFootstepSoundCustom, &footMat);
+      SFXSource* source = SFX->createSource(contactMaterial->getCustomFootstepSoundProfile(), &footMat);
       source->setVolume(volume);
       source->setPitch(pitch);
       source->play();
@@ -8520,22 +8474,17 @@ void AAKPlayer::playFootstepSound( bool triggeredLeft, Material* contactMaterial
       switch ( sound )
       {
       case 0: // Soft
-         SFX->playOnce( mDataBlock->sound[AAKPlayerData::FootSoft], &footMat );
+         SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::FootSoft), &getTransform());
          break;
       case 1: // Hard
-         SFX->playOnce( mDataBlock->sound[AAKPlayerData::FootHard], &footMat );
+         SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::FootHard), &getTransform());
          break;
       case 2: // Metal
-         SFX->playOnce( mDataBlock->sound[AAKPlayerData::FootMetal], &footMat );
+         SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::FootMetal), &getTransform());
          break;
       case 3: // Snow
-         SFX->playOnce( mDataBlock->sound[AAKPlayerData::FootSnow], &footMat );
+         SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::FootSnow), &getTransform());
          break;
-      /*
-      default: //Hard
-         SFX->playOnce( mDataBlock->sound[AAKPlayerData::FootHard], &footMat );
-         break;
-      */
       }
    }
 }
@@ -8556,8 +8505,8 @@ void AAKPlayer:: playImpactSound()
       {
          Material* material = ( rInfo.material ? dynamic_cast< Material* >( rInfo.material->getMaterial() ) : 0 );
 
-         if( material && material->mImpactSoundCustom )
-            SFX->playOnce( material->mImpactSoundCustom, &getTransform() );
+         if( material && material->isCustomImpactSoundValid())
+            SFX->playOnce( material->getCustomImpactSoundProfile(), &getTransform() );
          else
          {
             S32 sound = -1;
@@ -8570,19 +8519,19 @@ void AAKPlayer:: playImpactSound()
             {
             case 0:
                //Soft
-               SFX->playOnce( mDataBlock->sound[ AAKPlayerData::ImpactSoft ], &getTransform() );
+               SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::ImpactSoft), &getTransform());
                break;
             case 1:
                //Hard
-               SFX->playOnce( mDataBlock->sound[ AAKPlayerData::ImpactHard ], &getTransform() );
+               SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::ImpactHard), &getTransform());
                break;
             case 2:
                //Metal
-               SFX->playOnce( mDataBlock->sound[ AAKPlayerData::ImpactMetal ], &getTransform() );
+               SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::ImpactMetal), &getTransform());
                break;
             case 3:
                //Snow
-               SFX->playOnce( mDataBlock->sound[ AAKPlayerData::ImpactSnow ], &getTransform() );
+               SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::ImpactSnow), &getTransform());
                break;
                /*
             default:
@@ -8746,11 +8695,11 @@ bool AAKPlayer::collidingWithWater( Point3F &waterHeight )
 void AAKPlayer::createSplash( Point3F &pos, F32 speed )
 {
    if ( speed >= mDataBlock->hardSplashSoundVel )
-      SFX->playOnce( mDataBlock->sound[AAKPlayerData::ImpactWaterHard], &getTransform() );
+      SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::ImpactWaterHard), &getTransform());
    else if ( speed >= mDataBlock->medSplashSoundVel )
-      SFX->playOnce( mDataBlock->sound[AAKPlayerData::ImpactWaterMedium], &getTransform() );
+      SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::ImpactWaterMedium), &getTransform());
    else
-      SFX->playOnce( mDataBlock->sound[AAKPlayerData::ImpactWaterEasy], &getTransform() );
+      SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::ImpactWaterEasy), &getTransform());
 
    if( mDataBlock->splash )
    {
