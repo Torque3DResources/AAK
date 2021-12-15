@@ -93,6 +93,7 @@ static F32 sSlowStandThreshSquared = 1.69f;
 static S32 sRenderMyPlayer = true;
 static S32 sRenderMyItems = true;
 static bool sRenderPlayerCollision = false;
+static bool sRenderHelpers = false;
 
 // Chooses new action animations every n ticks.
 static const F32 sNewAnimationTickTime = 1.0f;
@@ -3017,8 +3018,11 @@ void AAKPlayer::updateMove(const Move* move)
 
 	//draw the move vector for debugging
 	#ifdef ENABLE_DEBUGDRAW
-	DebugDrawer::get()->drawLine(getPosition(), getPosition() + moveVec, ColorI::RED);
-	DebugDrawer::get()->setLastTTL(TickMs);
+   if (sRenderHelpers)
+   {
+      DebugDrawer::get()->drawLine(getPosition(), getPosition() + moveVec, ColorI::RED);
+      DebugDrawer::get()->setLastTTL(TickMs);
+   }
 	#endif
 
 	//Ubiq: use this normalized moveVec for testing in dot products
@@ -5956,17 +5960,20 @@ bool AAKPlayer::step(Point3F *pos,F32 *maxStep,F32 time)
 					if(collisionPoint.z > pos->z && step < *maxStep)
 					{
 #ifdef ENABLE_DEBUGDRAW
-						//draw the edge
-						DebugDrawer::get()->drawLine(vertex1, vertex2, LinearColorF(0.5f,0,0));
-						DebugDrawer::get()->setLastTTL(2000);
+                  if (sRenderHelpers)
+                  {
+                     //draw the edge
+                     DebugDrawer::get()->drawLine(vertex1, vertex2, LinearColorF(0.5f, 0, 0));
+                     DebugDrawer::get()->setLastTTL(2000);
 
-						//calculate the "normal" of this edge
-						Point3F normal = mCross(Point3F(0,0,1), vertex2 - vertex1);
-						normal.normalizeSafe();
+                     //calculate the "normal" of this edge
+                     Point3F normal = mCross(Point3F(0, 0, 1), vertex2 - vertex1);
+                     normal.normalizeSafe();
 
-						//draw the normal at the collisionPoint we used
-						DebugDrawer::get()->drawLine(collisionPoint, collisionPoint + normal, LinearColorF(0,0.5f,0));
-						DebugDrawer::get()->setLastTTL(2000);
+                     //draw the normal at the collisionPoint we used
+                     DebugDrawer::get()->drawLine(collisionPoint, collisionPoint + normal, LinearColorF(0, 0.5f, 0));
+                     DebugDrawer::get()->setLastTTL(2000);
+                  }
 #endif
 
 						// Go ahead and step
@@ -6471,8 +6478,11 @@ void AAKPlayer::_findContact( SceneObject **contactObject,
    wBox.maxExtents.y = pos.y + mScaledBox.maxExtents.y;
    wBox.maxExtents.z = pos.z + mScaledBox.minExtents.z + sTractionDistance;
 #ifdef ENABLE_DEBUGDRAW
-	DebugDrawer::get()->drawBox(wBox.minExtents, wBox.maxExtents);
-	DebugDrawer::get()->setLastTTL(TickMs);
+   if (sRenderHelpers)
+   {
+      DebugDrawer::get()->drawBox(wBox.minExtents, wBox.maxExtents);
+      DebugDrawer::get()->setLastTTL(TickMs);
+   }
 #endif
    static ClippedPolyList polyList;
    polyList.clear();
@@ -6763,10 +6773,13 @@ void AAKPlayer::setRenderPosition(const Point3F& pos, const Point3F& rot, F32 dt
 				hit[c] = rInfo.point;
 
 				#ifdef ENABLE_DEBUGDRAW
-				DebugDrawer::get()->drawLine(rayStart, rInfo.point, ColorI::RED);
-				DebugDrawer::get()->setLastTTL(TickMs);
-				DebugDrawer::get()->drawLine(rInfo.point, rayEnd, ColorI::BLUE);
-				DebugDrawer::get()->setLastTTL(TickMs);
+            if (sRenderHelpers)
+            {
+               DebugDrawer::get()->drawLine(rayStart, rInfo.point, ColorI::RED);
+               DebugDrawer::get()->setLastTTL(TickMs);
+               DebugDrawer::get()->drawLine(rInfo.point, rayEnd, ColorI::BLUE);
+               DebugDrawer::get()->setLastTTL(TickMs);
+            }
 				#endif
 			}
 			else
@@ -6780,8 +6793,10 @@ void AAKPlayer::setRenderPosition(const Point3F& pos, const Point3F& rot, F32 dt
 			normal.normalize();
 
 			#ifdef ENABLE_DEBUGDRAW
-			DebugDrawer::get()->drawLine(pos, pos + normal, ColorI::BLUE);
-			DebugDrawer::get()->setLastTTL(TickMs);
+         {
+            DebugDrawer::get()->drawLine(pos, pos + normal, ColorI::BLUE);
+            DebugDrawer::get()->setLastTTL(TickMs);
+         }
 			#endif
 
 			VectorF  upY(0.0f, 1.0f, 0.0f), ahead;
@@ -6828,10 +6843,13 @@ void AAKPlayer::setRenderPosition(const Point3F& pos, const Point3F& rot, F32 dt
 					goal = rInfo.point.z - rayStart.z;
 
 					#ifdef ENABLE_DEBUGDRAW
-						DebugDrawer::get()->drawLine(rayStart, rInfo.point, ColorI::RED);
-						DebugDrawer::get()->setLastTTL(TickMs);
-						DebugDrawer::get()->drawLine(rInfo.point, rayEnd, ColorI::BLUE);
-						DebugDrawer::get()->setLastTTL(TickMs);
+               if (sRenderHelpers)
+               {
+                  DebugDrawer::get()->drawLine(rayStart, rInfo.point, ColorI::RED);
+                  DebugDrawer::get()->setLastTTL(TickMs);
+                  DebugDrawer::get()->drawLine(rInfo.point, rayEnd, ColorI::BLUE);
+                  DebugDrawer::get()->setLastTTL(TickMs);
+               }
 					#endif
 				}
 			}
@@ -8356,7 +8374,10 @@ void AAKPlayer::consoleInit()
       "@brief Determines if the player's collision mesh should be rendered.\n\n"
       "This is mainly used for the tools and debugging.\n"
 	   "@ingroup GameObjects\n");
-
+   Con::addVariable("$AAKPlayer::renderHelpers", TypeBool, &sRenderHelpers,
+      "@brief Determines if the player's nodes, mantle-able geometry et al should be rendered.\n\n"
+      "This is mainly used for the tools and debugging.\n"
+      "@ingroup GameObjects\n");
    Con::addVariable("$AAKPlayer::minWarpTicks",TypeF32,&sMinWarpTicks, 
       "@brief Fraction of tick at which instant warp occures on the client.\n\n"
 	   "@ingroup GameObjects\n");
@@ -9298,14 +9319,17 @@ bool AAKPlayer::worldBoxIsClear(Box3F worldSpaceBox)
    enableCollision();
 
 #ifdef ENABLE_DEBUGDRAW
-   LinearColorF color;
-   if (isClear)
-      color = LinearColorF(0, 1, 0);
-   else
-      color = LinearColorF(1, 0, 0);
+   if (sRenderHelpers)
+   {
+      LinearColorF color;
+      if (isClear)
+         color = LinearColorF(0, 1, 0);
+      else
+         color = LinearColorF(1, 0, 0);
 
-   DebugDrawer::get()->drawBox(worldSpaceBox.minExtents, worldSpaceBox.maxExtents, color);
-   DebugDrawer::get()->setLastTTL(TickMs);
+      DebugDrawer::get()->drawBox(worldSpaceBox.minExtents, worldSpaceBox.maxExtents, color);
+      DebugDrawer::get()->setLastTTL(TickMs);
+   }
 #endif
 
    return isClear;
@@ -9403,8 +9427,11 @@ void AAKPlayer::findClimbContact(bool* climb, PlaneF* climbPlane)
 
 
 #ifdef ENABLE_DEBUGDRAW
-	DebugDrawer::get()->drawBox(wBox.minExtents, wBox.maxExtents);
-	DebugDrawer::get()->setLastTTL(100);
+   if (sRenderHelpers)
+   {
+      DebugDrawer::get()->drawBox(wBox.minExtents, wBox.maxExtents);
+      DebugDrawer::get()->setLastTTL(100);
+   }
 #endif
 
 	static ClippedPolyList polyList;
@@ -9564,8 +9591,11 @@ void AAKPlayer::findWallContact(bool* wall, PlaneF* wallPlane)
 
 
 #ifdef ENABLE_DEBUGDRAW
-	DebugDrawer::get()->drawBox(wBox.minExtents, wBox.maxExtents);
-	DebugDrawer::get()->setLastTTL(TickMs);
+   if (sRenderHelpers)
+   {
+      DebugDrawer::get()->drawBox(wBox.minExtents, wBox.maxExtents);
+      DebugDrawer::get()->setLastTTL(TickMs);
+   }
 #endif
 
 	static ClippedPolyList polyList;
@@ -9742,8 +9772,11 @@ void AAKPlayer::findLedgeContact(bool* ledge, VectorF* ledgeNormal, Point3F* led
 	wBox.maxExtents += offset + pos;
 
 #ifdef ENABLE_DEBUGDRAW
-	DebugDrawer::get()->drawBox(wBox.minExtents, wBox.maxExtents);
-	DebugDrawer::get()->setLastTTL(TickMs);
+   if (sRenderHelpers)
+   {
+      DebugDrawer::get()->drawBox(wBox.minExtents, wBox.maxExtents);
+      DebugDrawer::get()->setLastTTL(TickMs);
+   }
 #endif
 
 	static ConcretePolyList polyList;
@@ -9869,14 +9902,17 @@ void AAKPlayer::findLedgeContact(bool* ledge, VectorF* ledgeNormal, Point3F* led
 										*canMoveRight = *canMoveRight || !wBox.isContained(vertex1);
 
 										#ifdef ENABLE_DEBUGDRAW
-										//draw the edge
-										DebugDrawer::get()->drawLine(vertex1, vertex2, LinearColorF(1.0f,0.0f,0.5f));
-										DebugDrawer::get()->setLastTTL(TickMs);
+                              if (sRenderHelpers)
+                              {
+                                 //draw the edge
+                                 DebugDrawer::get()->drawLine(vertex1, vertex2, LinearColorF(1.0f, 0.0f, 0.5f));
+                                 DebugDrawer::get()->setLastTTL(TickMs);
 
-										//draw the edgeNormal at the midPoint
-										Point3F midPoint = (vertex1 + vertex2) / 2.0f;
-										DebugDrawer::get()->drawLine(midPoint, midPoint + edgeNormal, LinearColorF(0.0f,0.5f,0.5f));
-										DebugDrawer::get()->setLastTTL(TickMs);
+                                 //draw the edgeNormal at the midPoint
+                                 Point3F midPoint = (vertex1 + vertex2) / 2.0f;
+                                 DebugDrawer::get()->drawLine(midPoint, midPoint + edgeNormal, LinearColorF(0.0f, 0.5f, 0.5f));
+                                 DebugDrawer::get()->setLastTTL(TickMs);
+                              }
 										#endif
 									}
 								}
@@ -9896,9 +9932,12 @@ void AAKPlayer::findLedgeContact(bool* ledge, VectorF* ledgeNormal, Point3F* led
 			*ledgeNormal /= totalWeight;
 
 			#ifdef ENABLE_DEBUGDRAW
-			//draw the ledge point
-			DebugDrawer::get()->drawLine(*ledgePoint, *ledgePoint + *ledgeNormal, ColorI::BLACK);
-			DebugDrawer::get()->setLastTTL(TickMs);
+         if (sRenderHelpers)
+         {
+            //draw the ledge point
+            DebugDrawer::get()->drawLine(*ledgePoint, *ledgePoint + *ledgeNormal, ColorI::BLACK);
+            DebugDrawer::get()->setLastTTL(TickMs);
+         }
 			#endif
 		}
 		else

@@ -157,6 +157,7 @@ public:
 
 	CameraGoalPlayer();
 	~CameraGoalPlayer();
+   static void consoleInit();
 
 	bool onAdd();
 	void onRemove();
