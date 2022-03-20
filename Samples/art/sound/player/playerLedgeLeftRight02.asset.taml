@@ -1,0 +1,11 @@
+<SoundAsset
+    AssetName="playerLedgeLeftRight02"
+    soundFile="@assetFile=player_ledge_leftright02.ogg"
+    is3D="true"
+    minDistance="0"
+    maxDistance="60"
+    sourceGroup="AudioChannelEffects"
+    pitch="1"
+    priority="1"
+    VersionId="1"
+    volume="1"/>

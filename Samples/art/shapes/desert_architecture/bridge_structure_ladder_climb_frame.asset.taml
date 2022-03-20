@@ -1,0 +1,5 @@
+<ShapeAsset
+    AssetName="bridge_structure_ladder_climb_frame"
+    fileName="@assetFile=bridge_structure_ladder_climb_frame.dae"
+    constuctorFileName="@assetFile=bridge_structure_ladder_climb_frame.tscript"
+    materialSlot0="@asset=AAK:DESERT_BRICK_VERTICAL_TRIM"/>

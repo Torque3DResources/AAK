@@ -1,0 +1,10 @@
+<SoundAsset
+    AssetName="playerWaterSplash"
+    soundFile="@assetFile=player_water_splash01.ogg"
+    is3D="true"
+    minDistance="0"
+    sourceGroup="AudioChannelEffects"
+    pitch="1"
+    priority="1"
+    VersionId="1"
+    volume="1"/>

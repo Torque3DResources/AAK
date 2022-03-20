@@ -1,0 +1,7 @@
+<ShapeAsset
+    AssetName="tutorial_structure_ledge_leftRight"
+    fileName="@assetFile=tutorial_structure_ledge_leftRight.dae"
+    constuctorFileName="@assetFile=tutorial_structure_ledge_leftRight.tscript"
+    materialSlot0="@asset=AAK:DESERT_BRICK_VERTICAL_TRIM"
+    materialSlot1="@asset=AAK:DESERT_BRICK_SQUARE_SANDY"
+    materialSlot2="@asset=AAK:DESERT_BRICK_BEVEL_TRIM"/>

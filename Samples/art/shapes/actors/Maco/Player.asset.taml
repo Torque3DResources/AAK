@@ -1,0 +1,6 @@
+<ShapeAsset
+    AssetName="Player"
+    fileName="@assetFile=player.dts"
+    constuctorFileName="@assetFile=player.tscript"
+    materialSlot0="@asset=AAK:base_maco_mat_body_diffusetex"
+    materialSlot1="@asset=AAK:cnst_maco_mat_face_diffusetex"/>

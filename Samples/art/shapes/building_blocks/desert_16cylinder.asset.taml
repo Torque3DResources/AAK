@@ -1,0 +1,6 @@
+<ShapeAsset
+    AssetName="desert_16cylinder"
+    fileName="@assetFile=desert_16cylinder.dae"
+    constuctorFileName="@assetFile=desert_16cylinder.tscript"
+    materialSlot0="@asset=AAK:DESERT_BRICK_SQUARE_SANDY"
+    materialSlot1="@asset=AAK:DESERT_BRICK_VERTICAL_TRIM"/>

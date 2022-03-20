@@ -1,0 +1,143 @@
+//======================================================================
+// Footsteps
+//======================================================================
+
+new SFXPlayList(playerFootstepSand)
+{
+   description = AudioEffect;
+   numSlotsToPlay = 1;
+   random = "OrderedRandom";
+   track[0] = playerFootstepSand01;
+   track[1] = playerFootstepSand02;
+   track[2] = playerFootstepSand03;
+   pitchScaleVariance[0] = "-0.1 0.1";
+   pitchScaleVariance[1] = "-0.1 0.1";
+   pitchScaleVariance[2] = "-0.1 0.1";
+};
+
+//----------------------------------------------------------------------
+
+new SFXPlayList(playerFootstepStone)
+{
+   description = AudioEffect;
+   numSlotsToPlay = 1;
+   random = "OrderedRandom";
+   track[0] = playerFootstepStone01;
+   track[1] = playerFootstepStone02;
+   track[2] = playerFootstepStone03;
+   pitchScaleVariance[0] = "-0.1 0.1";
+   pitchScaleVariance[1] = "-0.1 0.1";
+   pitchScaleVariance[2] = "-0.1 0.1";
+};
+
+//======================================================================
+// Stopping
+//======================================================================
+
+
+//======================================================================
+// Jumping
+//======================================================================
+
+
+//----------------------------------------------------------------------
+
+new SFXPlayList(playerJump)
+{
+   description = AudioEffect;
+   numSlotsToPlay = 1;
+   random = "OrderedRandom";
+   track[0] = playerJump01;
+   track[1] = playerJump02;
+   track[2] = playerJump03;
+   pitchScaleVariance[0] = "-0.1 0.1";
+   pitchScaleVariance[1] = "-0.1 0.1";
+   pitchScaleVariance[2] = "-0.1 0.1";
+};
+
+//======================================================================
+// Landing
+//======================================================================
+
+new SFXPlayList(playerLand)
+{
+   description = AudioEffect;
+   numSlotsToPlay = 1;
+   random = "OrderedRandom";
+   track[0] = playerLand01;
+   track[1] = playerLand02;
+   pitchScaleVariance[0] = "-0.1 0.1";
+   pitchScaleVariance[1] = "-0.1 0.1";
+};
+
+//======================================================================
+// Climbing
+//======================================================================
+
+
+//----------------------------------------------------------------------
+
+new SFXPlayList(playerClimbUp)
+{
+   description = AudioEffect;
+   numSlotsToPlay = 1;
+   random = "OrderedRandom";
+   track[0] = playerClimbUp01;
+   track[1] = playerClimbUp02;
+   track[2] = playerClimbUp03;
+   pitchScaleVariance[0] = "-0.1 0.1";
+   pitchScaleVariance[1] = "-0.1 0.1";
+   pitchScaleVariance[2] = "-0.1 0.1";
+};
+
+//----------------------------------------------------------------------
+
+new SFXPlayList(playerClimbDown)
+{
+   description = AudioEffect;
+   numSlotsToPlay = 1;
+   random = "OrderedRandom";
+   track[0] = playerClimbDown01;
+   track[1] = playerClimbDown02;
+   pitchScaleVariance[0] = "-0.1 0.1";
+   pitchScaleVariance[1] = "-0.1 0.1";
+};
+
+//----------------------------------------------------------------------
+
+new SFXPlayList(playerClimbLeftRight)
+{
+   description = AudioEffect;
+   numSlotsToPlay = 1;
+   random = "OrderedRandom";
+   track[0] = playerClimbLeftRight01;
+   track[1] = playerClimbLeftRight02;
+   pitchScaleVariance[0] = "-0.1 0.1";
+   pitchScaleVariance[1] = "-0.1 0.1";
+};
+
+//======================================================================
+// Ledge Grabbing
+//======================================================================
+
+
+//----------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------
+
+new SFXPlayList(playerLedgeLeftRight)
+{
+   description = AudioEffect;
+   numSlotsToPlay = 1;
+   random = "OrderedRandom";
+   track[0] = playerLedgeLeftRight01;
+   track[1] = playerLedgeLeftRight02;
+   pitchScaleVariance[0] = "-0.1 0.1";
+   pitchScaleVariance[1] = "-0.1 0.1";
+};
+
+//======================================================================
+// Sliding
+//======================================================================
+

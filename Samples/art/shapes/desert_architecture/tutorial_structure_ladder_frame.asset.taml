@@ -1,0 +1,5 @@
+<ShapeAsset
+    AssetName="tutorial_structure_ladder_frame"
+    fileName="@assetFile=tutorial_structure_ladder_frame.dae"
+    constuctorFileName="@assetFile=tutorial_structure_ladder_frame.tscript"
+    materialSlot0="@asset=AAK:DESERT_BRICK_VERTICAL_TRIM"/>

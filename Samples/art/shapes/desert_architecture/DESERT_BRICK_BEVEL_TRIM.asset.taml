@@ -1,0 +1,16 @@
+<MaterialAsset
+    AssetName="DESERT_BRICK_BEVEL_TRIM"
+    materialDefinitionName="DESERT_BRICK_BEVEL_TRIM"
+    VersionId="1">
+    <Material
+        Name="DESERT_BRICK_BEVEL_TRIM"
+        mapTo="DESERT_BRICK_BEVEL_TRIM"
+        translucentBlendOp="None"
+        showFootprints="false"
+        customFootstepSound="playerFootstepStone">
+        <Material.Stages>
+            <Stages_beginarray
+                DiffuseMapAsset="AAK:desert_brick_bevel_trim_image"/>
+        </Material.Stages>
+    </Material>
+</MaterialAsset>

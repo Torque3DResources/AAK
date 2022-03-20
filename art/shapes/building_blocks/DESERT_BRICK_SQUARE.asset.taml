@@ -1,8 +1,0 @@
-<ImageAsset
-    canSave="true"
-    canSaveDynamicFields="true"
-    AssetName="DESERT_BRICK_SQUARE"
-    imageFile="@assetFile=desert_brick_square.jpg"
-    UseMips="true"
-    isHDRImage="false"
-    imageType="Albedo" />

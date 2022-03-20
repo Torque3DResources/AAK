@@ -80,10 +80,10 @@ struct AAKPlayerData: public ShapeBaseData {
                                                                   ///  that we don't create a TSThread on the player if we don't
                                                                   ///  need to.
 
-   StringTableEntry  shapeNameFP[ShapeBase::MaxMountedImages];    ///< Used to render with mounted images in first person [optional]
+   DECLARE_SHAPEASSET_ARRAY(PlayerData, ShapeFP, ShapeBase::MaxMountedImages);    ///< Used to render with mounted images in first person [optional]
+   DECLARE_ASSET_ARRAY_SETGET(PlayerData, ShapeFP);
    StringTableEntry  imageAnimPrefixFP;                           ///< Passed along to mounted images to modify
                                                                   ///  animation sequences played in first person. [optional]
-   Resource<TSShape> mShapeFP[ShapeBase::MaxMountedImages];       ///< First person mounted image shape resources [optional]
    U32               mCRCFP[ShapeBase::MaxMountedImages];         ///< Computed CRC values for the first person mounted image shapes
                                                                   ///  Depends on the ShapeBaseData computeCRC field.
    bool              mValidShapeFP[ShapeBase::MaxMountedImages];  ///< Indicates that there is a valid first person mounted image shape
@@ -110,7 +110,8 @@ struct AAKPlayerData: public ShapeBaseData {
    F32 upResistFactor;        ///< Factor of resistance once upResistSpeed has been reached
 
    F32 fallingSpeedThreshold; ///< Downward speed at which we consider the player falling
-
+   F32 vertDrag;
+   F32 vertDragFalling;
    //Ubiq: removing these - we use our own landing system
    /*S32 recoverDelay;          ///< # tick
    F32 recoverRunForceScale;  ///< RunForce multiplier in recover state
@@ -130,6 +131,7 @@ struct AAKPlayerData: public ShapeBaseData {
 
    // Jumping
    F32 jumpForce;             ///< Force exerted per jump
+   F32 jumpForceClimb;             ///< Force exerted per jump
    F32 jumpEnergyDrain;       ///< Energy drained per jump
    F32 minJumpEnergy;         ///< Minimum energy required to jump
    F32 minJumpSpeed;          ///< Minimum speed needed to jump
@@ -235,7 +237,7 @@ struct AAKPlayerData: public ShapeBaseData {
       ExitWater,
       MaxSounds
    };
-   SFXTrack* sound[MaxSounds];
+   DECLARE_SOUNDASSET_ARRAY(AAKPlayerData, PlayerSound, Sounds::MaxSounds);
 
    Point3F boxSize;           ///< Width, depth, height
    Point3F crouchBoxSize;
@@ -704,6 +706,7 @@ protected:
    void _handleCollision( const Collision &collision );
    virtual bool updatePos(const F32 travelTime = TickSec);
 
+   void updateAttachment();
    ///Update head animation
    void updateLookAnimation(F32 dT = 0.f);
 
@@ -786,6 +789,7 @@ public:
    AAKPlayer();
    ~AAKPlayer();
    static void consoleInit();
+   static void initPersistFields();
 
    /// @name Transforms
    /// @{

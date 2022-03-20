@@ -1,0 +1,7 @@
+<MaterialAsset
+    AssetName="DESERT_BRICK_SQUARE_SM_mat"
+    materialDefinitionName="DESERT_BRICK_SQUARE_SM_mat">
+    <Material
+        Name="DESERT_BRICK_SQUARE_SM_mat"
+        mapTo="DESERT_BRICK_SQUARE_SM_mat"/>
+</MaterialAsset>

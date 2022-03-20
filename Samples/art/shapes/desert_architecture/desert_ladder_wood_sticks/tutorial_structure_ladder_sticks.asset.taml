@@ -1,0 +1,6 @@
+<ShapeAsset
+    AssetName="tutorial_structure_ladder_sticks"
+    fileName="@assetFile=tutorial_structure_ladder_sticks.dts"
+    constuctorFileName="@assetFile=tutorial_structure_ladder_sticks.tscript"
+    materialSlot0="@asset=AAK:dead_branch02jpg_mat"
+    materialSlot1="@asset=AAK:dead_branch01jpg_mat"/>

@@ -1,0 +1,9 @@
+<ShapeAsset
+    AssetName="tutorial_structure_pillar_walkway"
+    fileName="@assetFile=tutorial_structure_pillar_walkway.dae"
+    constuctorFileName="@assetFile=tutorial_structure_pillar_walkway.tscript"
+    materialSlot0="@asset=AAK:DESERT_BRICK_VERTICAL_TRIM"
+    materialSlot1="@asset=AAK:DESERT_PILLAR_BODY"
+    materialSlot2="@asset=AAK:DESERT_BRICK_ORNAMENT_ZAG"
+    materialSlot3="@asset=AAK:DESERT_PILLAR_BASE"
+    materialSlot4="@asset=AAK:DESERT_BRICK_ORNAMENT_ARC"/>

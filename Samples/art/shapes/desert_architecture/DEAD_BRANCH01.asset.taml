@@ -1,0 +1,16 @@
+<MaterialAsset
+    AssetName="DEAD_BRANCH01"
+    materialDefinitionName="DEAD_BRANCH01"
+    VersionId="1">
+    <Material
+        Name="DEAD_BRANCH01"
+        mapTo="DEAD_BRANCH01"
+        translucentBlendOp="None"
+        showFootprints="false"
+        customFootstepSound="playerFootstepStone">
+        <Material.Stages>
+            <Stages_beginarray
+                DiffuseMapAsset="AAK:dead_branch01_image"/>
+        </Material.Stages>
+    </Material>
+</MaterialAsset>

@@ -1,0 +1,12 @@
+
+singleton TSShapeConstructor(bridge_structure_platform01dae)
+{
+   baseShapeAsset = "AAK:bridge_structure_platform01";
+   singleDetailSize = "0";
+   neverImportMat = "DefaultMaterial	ColorEffect*";
+   flipUVCoords = "0";
+   JoinIdenticalVerts = "0";
+   reverseWindingOrder = "0";
+   removeRedundantMats = "0";
+   animFPS = "2";
+};

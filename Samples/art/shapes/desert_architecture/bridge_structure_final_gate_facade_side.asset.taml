@@ -1,0 +1,7 @@
+<ShapeAsset
+    AssetName="bridge_structure_final_gate_facade_side"
+    fileName="@assetFile=bridge_structure_final_gate_facade_side.dae"
+    constuctorFileName="@assetFile=bridge_structure_final_gate_facade_side.tscript"
+    materialSlot0="@asset=AAK:DESERT_BRICK_SQUARE"
+    materialSlot1="@asset=AAK:DESERT_PILLAR_BODY"
+    materialSlot2="@asset=AAK:DESERT_BRICK_VERTICAL_TRIM"/>

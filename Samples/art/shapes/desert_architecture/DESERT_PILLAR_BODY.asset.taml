@@ -1,0 +1,16 @@
+<MaterialAsset
+    AssetName="DESERT_PILLAR_BODY"
+    materialDefinitionName="DESERT_PILLAR_BODY"
+    VersionId="1">
+    <Material
+        Name="DESERT_PILLAR_BODY"
+        mapTo="DESERT_PILLAR_BODY"
+        translucentBlendOp="None"
+        showFootprints="false"
+        customFootstepSound="playerFootstepStone">
+        <Material.Stages>
+            <Stages_beginarray
+                DiffuseMapAsset="AAK:desert_pillar_body_image"/>
+        </Material.Stages>
+    </Material>
+</MaterialAsset>

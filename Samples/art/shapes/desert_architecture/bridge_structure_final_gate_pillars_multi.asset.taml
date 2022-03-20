@@ -1,0 +1,9 @@
+<ShapeAsset
+    AssetName="bridge_structure_final_gate_pillars_multi"
+    fileName="@assetFile=bridge_structure_final_gate_pillars_multi.dae"
+    constuctorFileName="@assetFile=bridge_structure_final_gate_pillars_multi.tscript"
+    materialSlot0="@asset=AAK:DESERT_PILLAR_BODY"
+    materialSlot1="@asset=AAK:DESERT_BRICK_ORNAMENT_ARC"
+    materialSlot2="@asset=AAK:DESERT_BRICK_ORNAMENT_ZAG"
+    materialSlot3="@asset=AAK:DESERT_PILLAR_BASE"
+    materialSlot4="@asset=AAK:DESERT_BRICK_VERTICAL_TRIM"/>

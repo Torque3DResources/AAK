@@ -1,0 +1,12 @@
+
+singleton TSShapeConstructor(tutorial_structure_ledge_leftRightdae)
+{
+   baseShapeAsset = "AAK:tutorial_structure_ledge_leftRight";
+   singleDetailSize = "0";
+   neverImportMat = "DefaultMaterial	ColorEffect*";
+   flipUVCoords = "0";
+   JoinIdenticalVerts = "0";
+   reverseWindingOrder = "0";
+   removeRedundantMats = "0";
+   animFPS = "2";
+};

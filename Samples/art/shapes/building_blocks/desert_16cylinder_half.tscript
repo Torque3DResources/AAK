@@ -1,0 +1,12 @@
+
+singleton TSShapeConstructor(desert_16cylinder_halfdae)
+{
+   baseShapeAsset = "AAK:desert_16cylinder_half";
+   singleDetailSize = "0";
+   neverImportMat = "DefaultMaterial	ColorEffect*";
+   flipUVCoords = "0";
+   JoinIdenticalVerts = "0";
+   reverseWindingOrder = "0";
+   removeRedundantMats = "0";
+   animFPS = "2";
+};

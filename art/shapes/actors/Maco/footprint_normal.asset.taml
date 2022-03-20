@@ -1,8 +1,0 @@
-<ImageAsset
-    canSave="true"
-    canSaveDynamicFields="true"
-    AssetName="footprint_normal"
-    imageFile="@assetFile=footprint_normal.png"
-    UseMips="true"
-    isHDRImage="false"
-    imageType="Albedo" />

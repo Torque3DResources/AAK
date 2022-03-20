@@ -1,0 +1,12 @@
+
+singleton TSShapeConstructor(tutorial_structure_pillar_with_ornamentsdae)
+{
+   baseShapeAsset = "AAK:tutorial_structure_pillar_with_ornaments";
+   singleDetailSize = "0";
+   neverImportMat = "DefaultMaterial	ColorEffect*";
+   flipUVCoords = "0";
+   JoinIdenticalVerts = "0";
+   reverseWindingOrder = "0";
+   removeRedundantMats = "0";
+   animFPS = "2";
+};

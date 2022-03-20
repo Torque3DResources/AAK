@@ -1,0 +1,3 @@
+<ShapeAnimationAsset
+    AssetName="player_jump"
+    animationFile="@assetFile=player_jump.dsq"/>

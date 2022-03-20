@@ -1,0 +1,9 @@
+<ShapeAsset
+    AssetName="tutorial_structure_pillar_with_ornaments"
+    fileName="@assetFile=tutorial_structure_pillar_with_ornaments.dae"
+    constuctorFileName="@assetFile=tutorial_structure_pillar_with_ornaments.tscript"
+    materialSlot0="@asset=AAK:DESERT_PILLAR_BODY"
+    materialSlot1="@asset=AAK:DESERT_BRICK_VERTICAL_TRIM"
+    materialSlot2="@asset=AAK:DEAD_BRANCH01"
+    materialSlot3="@asset=AAK:DESERT_BRICK_ORNAMENT_ZAG"
+    materialSlot4="@asset=AAK:DESERT_PILLAR_BASE"/>

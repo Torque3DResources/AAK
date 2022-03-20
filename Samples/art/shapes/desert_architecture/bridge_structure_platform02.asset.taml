@@ -1,0 +1,6 @@
+<ShapeAsset
+    AssetName="bridge_structure_platform02"
+    fileName="@assetFile=bridge_structure_platform02.dae"
+    constuctorFileName="@assetFile=bridge_structure_platform02.tscript"
+    materialSlot0="@asset=AAK:DESERT_BRICK_VERTICAL_TRIM"
+    materialSlot1="@asset=AAK:DESERT_BRICK_SQUARE"/>

@@ -1,0 +1,3 @@
+<ShapeAnimationAsset
+    AssetName="player_death"
+    animationFile="@assetFile=player_death.dsq"/>

@@ -1,0 +1,16 @@
+<MaterialAsset
+    AssetName="DESERT_BRICK_VERTICAL_TRIM"
+    materialDefinitionName="DESERT_BRICK_VERTICAL_TRIM"
+    VersionId="1">
+    <Material
+        Name="DESERT_BRICK_VERTICAL_TRIM"
+        mapTo="DESERT_BRICK_VERTICAL_TRIM"
+        translucentBlendOp="None"
+        showFootprints="false"
+        customFootstepSound="playerFootstepStone">
+        <Material.Stages>
+            <Stages_beginarray
+                DiffuseMapAsset="AAK:desert_brick_vertical_trim_image"/>
+        </Material.Stages>
+    </Material>
+</MaterialAsset>

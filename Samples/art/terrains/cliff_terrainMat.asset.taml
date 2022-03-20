@@ -1,0 +1,17 @@
+<TerrainMaterialAsset
+    AssetName="cliff_terrainMat"
+    materialDefinitionName="cliff_terrainMat"
+    VersionId="1">
+    <TerrainMaterial
+        Name="cliff_terrainMat"
+        DiffuseMapAsset="AAK:cliff_wall_image"
+        diffuseSize="200"
+        NormalMapAsset="AAK:cliff_wall_normal_image"
+        DetailMapAsset="AAK:cliff_wall_image"
+        detailSize="75"
+        detailStrength="0.5"
+        detailDistance="2000"
+        useSideProjection="true"
+        internalName="cliff_terrainMat"
+        customFootstepSound="playerFootstepStone"/>
+</TerrainMaterialAsset>

@@ -1,0 +1,7 @@
+<ShapeAsset
+    AssetName="tutorial_structure_stick_ornament_multi_x4"
+    fileName="@assetFile=tutorial_structure_stick_ornament_multi_x4.dae"
+    constuctorFileName="@assetFile=tutorial_structure_stick_ornament_multi_x4.tscript"
+    materialSlot0="@asset=AAK:DESERT_BRICK_VERTICAL_TRIM"
+    materialSlot1="@asset=AAK:DEAD_BRANCH01"
+    materialSlot2="@asset=AAK:DEAD_BRANCH02"/>

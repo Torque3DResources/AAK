@@ -1,0 +1,7 @@
+<ShapeAsset
+    AssetName="bridge_structure_broken_pillar_top"
+    fileName="@assetFile=bridge_structure_broken_pillar_top.dae"
+    constuctorFileName="@assetFile=bridge_structure_broken_pillar_top.tscript"
+    materialSlot0="@asset=AAK:DESERT_PILLAR_BODY"
+    materialSlot1="@asset=AAK:DESERT_BRICK_ORNAMENT_ZAG"
+    materialSlot2="@asset=AAK:DESERT_BRICK_SQUARE"/>

@@ -1,0 +1,12 @@
+
+singleton TSShapeConstructor(bridge_structure_pillar_top_ledgegrabdae)
+{
+   baseShapeAsset = "AAK:bridge_structure_pillar_top_ledgegrab";
+   singleDetailSize = "0";
+   neverImportMat = "DefaultMaterial	ColorEffect*";
+   flipUVCoords = "0";
+   JoinIdenticalVerts = "0";
+   reverseWindingOrder = "0";
+   removeRedundantMats = "0";
+   animFPS = "2";
+};

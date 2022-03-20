@@ -1,0 +1,7 @@
+<MaterialAsset
+    AssetName="dead_branch_longjpg_mat"
+    materialDefinitionName="dead_branch_longjpg_mat"/>
+    <Material
+        Name="dead_branch_longjpg_mat"
+        mapTo="dead_branch_longjpg_mat"/>
+</MaterialAsset>

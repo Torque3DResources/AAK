@@ -1,8 +1,0 @@
-<ImageAsset
-    canSave="true"
-    canSaveDynamicFields="true"
-    AssetName="dead_branch_long"
-    imageFile="@assetFile=dead_branch_long.jpg"
-    UseMips="true"
-    isHDRImage="false"
-    imageType="Albedo" />

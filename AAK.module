@@ -4,7 +4,7 @@
     ModuleId="AAK"
     VersionId="1"
     Group="Game"
-    scriptFile="AAK.cs"
+    scriptFile="AAK"
     CreateFunction="onCreate"
     DestroyFunction="onDestroy">
     <DeclaredAssets

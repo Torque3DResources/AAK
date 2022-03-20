@@ -1,0 +1,7 @@
+<MaterialAsset
+    AssetName="DESERT_BRICK_ORNAMENT_mat"
+    materialDefinitionName="DESERT_BRICK_ORNAMENT_mat">
+    <Material
+        Name="DESERT_BRICK_ORNAMENT_mat"
+        mapTo="DESERT_BRICK_ORNAMENT_mat"/>
+</MaterialAsset>

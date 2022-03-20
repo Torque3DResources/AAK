@@ -1,0 +1,6 @@
+<ShapeAsset
+    AssetName="desert_thin_platform"
+    fileName="@assetFile=desert_thin_platform.dae"
+    constuctorFileName="@assetFile=desert_thin_platform.tscript"
+    materialSlot0="@asset=AAK:DESERT_BRICK_VERTICAL_TRIM"
+    materialSlot1="@asset=AAK:DESERT_BRICK_SQUARE"/>

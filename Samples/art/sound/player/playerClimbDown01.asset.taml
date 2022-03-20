@@ -1,0 +1,11 @@
+<SoundAsset
+    AssetName="playerClimbDown01"
+    soundFile="@assetFile=player_climb_down01.ogg"
+    is3D="true"
+    minDistance="0"
+    maxDistance="60"
+    sourceGroup="AudioChannelEffects"
+    pitch="1"
+    priority="1"
+    VersionId="1"
+    volume="1"/>

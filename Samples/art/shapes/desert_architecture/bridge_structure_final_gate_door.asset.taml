@@ -1,0 +1,6 @@
+<ShapeAsset
+    AssetName="bridge_structure_final_gate_door"
+    fileName="@assetFile=bridge_structure_final_gate_door.dae"
+    constuctorFileName="@assetFile=bridge_structure_final_gate_door.tscript"
+    materialSlot0="@asset=AAK:DESERT_BRICK_SQUARE"
+    materialSlot1="@asset=AAK:DESERT_BRICK_VERTICAL_TRIM"/>

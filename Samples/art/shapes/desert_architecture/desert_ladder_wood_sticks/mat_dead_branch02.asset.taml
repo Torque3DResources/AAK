@@ -1,0 +1,14 @@
+<MaterialAsset
+    AssetName="mat_dead_branch02"
+    materialDefinitionName="mat_dead_branch02"
+    VersionId="1">
+    <Material
+        Name="mat_dead_branch02"
+        mapTo="dead_branch02.jpg"
+        showFootprints="false">
+        <Material.Stages>
+            <Stages_beginarray
+                DiffuseMapAsset="AAK:dead_branch02_image"/>
+        </Material.Stages>
+    </Material>
+</MaterialAsset>

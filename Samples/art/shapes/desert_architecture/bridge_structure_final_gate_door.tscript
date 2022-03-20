@@ -1,0 +1,12 @@
+
+singleton TSShapeConstructor(bridge_structure_final_gate_doordae)
+{
+   baseShapeAsset = "AAK:bridge_structure_final_gate_door";
+   singleDetailSize = "0";
+   neverImportMat = "DefaultMaterial	ColorEffect*";
+   flipUVCoords = "0";
+   JoinIdenticalVerts = "0";
+   reverseWindingOrder = "0";
+   removeRedundantMats = "0";
+   animFPS = "2";
+};

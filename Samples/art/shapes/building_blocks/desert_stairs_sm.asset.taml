@@ -1,0 +1,6 @@
+<ShapeAsset
+    AssetName="desert_stairs_sm"
+    fileName="@assetFile=desert_stairs_sm.dae"
+    constuctorFileName="@assetFile=desert_stairs_sm.tscript"
+    materialSlot0="@asset=AAK:DESERT_BRICK_SQUARE_SANDY"
+    materialSlot1="@asset=AAK:DESERT_BRICK_VERTICAL_TRIM"/>

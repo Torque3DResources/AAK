@@ -1,0 +1,12 @@
+
+singleton TSShapeConstructor(tutorial_structure_stairs05_widedae)
+{
+   baseShapeAsset = "AAK:tutorial_structure_stairs05_wide";
+   singleDetailSize = "0";
+   neverImportMat = "DefaultMaterial	ColorEffect*";
+   flipUVCoords = "0";
+   JoinIdenticalVerts = "0";
+   reverseWindingOrder = "0";
+   removeRedundantMats = "0";
+   animFPS = "2";
+};

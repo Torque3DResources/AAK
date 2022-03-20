@@ -1,0 +1,7 @@
+<ShapeAsset
+    AssetName="bridge_structure_pillar_lower_level_break"
+    fileName="@assetFile=bridge_structure_pillar_lower_level_break.dae"
+    constuctorFileName="@assetFile=bridge_structure_pillar_lower_level_break.tscript"
+    materialSlot0="@asset=AAK:DESERT_PILLAR_BODY"
+    materialSlot1="@asset=AAK:DESERT_BRICK_SQUARE"
+    materialSlot2="@asset=AAK:DESERT_BRICK_ORNAMENT_ZAG"/>

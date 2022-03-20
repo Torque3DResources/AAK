@@ -1,0 +1,8 @@
+<ShapeAsset
+    AssetName="bridge_structure_balcony_support_pillar_sm"
+    fileName="@assetFile=bridge_structure_balcony_support_pillar_sm.dae"
+    constuctorFileName="@assetFile=bridge_structure_balcony_support_pillar_sm.tscript"
+    materialSlot0="@asset=AAK:DESERT_PILLAR_BODY"
+    materialSlot1="@asset=AAK:DESERT_BRICK_ORNAMENT_ZAG"
+    materialSlot2="@asset=AAK:DESERT_PILLAR_BASE"
+    materialSlot3="@asset=AAK:DESERT_BRICK_VERTICAL_TRIM"/>

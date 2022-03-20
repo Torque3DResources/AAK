@@ -1,0 +1,12 @@
+
+singleton TSShapeConstructor(tutorial_structure_pillar_backdae)
+{
+   baseShapeAsset = "AAK:tutorial_structure_pillar_back";
+   singleDetailSize = "0";
+   neverImportMat = "DefaultMaterial	ColorEffect*";
+   flipUVCoords = "0";
+   JoinIdenticalVerts = "0";
+   reverseWindingOrder = "0";
+   removeRedundantMats = "0";
+   animFPS = "2";
+};

@@ -1,0 +1,7 @@
+<ShapeAsset
+    AssetName="tutorial_structure_block01"
+    fileName="@assetFile=tutorial_structure_block01.dae"
+    constuctorFileName="@assetFile=tutorial_structure_block01.tscript"
+    materialSlot0="@asset=AAK:DESERT_BRICK_SQUARE_SANDY"
+    materialSlot1="@asset=AAK:DESERT_BRICK_VERTICAL_TRIM"
+    materialSlot2="@asset=AAK:DESERT_BRICK_BEVEL_TRIM"/>

@@ -1,0 +1,7 @@
+<ShapeAsset
+    AssetName="bridge_structure_ladder_sticks"
+    fileName="@assetFile=bridge_structure_ladder_sticks.dts"
+    constuctorFileName="@assetFile=bridge_structure_ladder_sticks.tscript"
+    materialSlot0="@asset=AAK:dead_branch_longjpg_mat"
+    materialSlot1="@asset=AAK:dead_branch02jpg_mat"
+    materialSlot2="@asset=AAK:dead_branch01jpg_mat"/>

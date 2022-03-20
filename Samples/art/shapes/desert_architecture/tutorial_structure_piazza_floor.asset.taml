@@ -1,0 +1,6 @@
+<ShapeAsset
+    AssetName="tutorial_structure_piazza_floor"
+    fileName="@assetFile=tutorial_structure_piazza_floor.dae"
+    constuctorFileName="@assetFile=tutorial_structure_piazza_floor.tscript"
+    materialSlot0="@asset=AAK:DESERT_BRICK_SQUARE_SANDY"
+    materialSlot1="@asset=AAK:DESERT_BRICK_VERTICAL_TRIM"/>

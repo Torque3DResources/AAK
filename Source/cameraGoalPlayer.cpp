@@ -1366,11 +1366,11 @@ void CameraGoalPlayer::clearForcedYaw()
 	setMaskBits(ModeMask);
 }
 
-DefineEngineMethod( CameraGoalPlayer, setForcedYaw, void, (F32 yaw, S32 ms), (0,0), "(yaw radians, ms)")
+DefineEngineMethod( CameraGoalPlayer, setForcedYaw, void, (F32 yaw, S32 ms), (0,0), "(yaw degrees, ms)")
 {
 	if(yaw != 0)
 	{
-		object->setForcedYaw(yaw, ms);
+		object->setForcedYaw(mDegToRad(yaw), ms);
 	}
 	else
 	{
@@ -1402,11 +1402,11 @@ void CameraGoalPlayer::clearForcedPitch()
 	setMaskBits(ModeMask);
 }
 
-DefineEngineMethod( CameraGoalPlayer, setForcedPitch, void, (F32 pitch, S32 ms), (0,0), "(pitch radians, ms)")
+DefineEngineMethod( CameraGoalPlayer, setForcedPitch, void, (F32 pitch, S32 ms), (0,0), "(pitch degrees, ms)")
 {
 	if(pitch != 0)
 	{
-		object->setForcedPitch(pitch, ms);
+		object->setForcedPitch(mDegToRad(pitch), ms);
 	}
 	else
 	{

@@ -1,0 +1,12 @@
+
+singleton TSShapeConstructor(desert_stairs_smdae)
+{
+   baseShapeAsset = "AAK:desert_stairs_sm";
+   singleDetailSize = "0";
+   neverImportMat = "DefaultMaterial	ColorEffect*";
+   flipUVCoords = "0";
+   JoinIdenticalVerts = "0";
+   reverseWindingOrder = "0";
+   removeRedundantMats = "0";
+   animFPS = "2";
+};

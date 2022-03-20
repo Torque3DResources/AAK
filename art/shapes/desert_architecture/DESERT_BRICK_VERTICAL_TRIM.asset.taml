@@ -1,8 +1,0 @@
-<ImageAsset
-    canSave="true"
-    canSaveDynamicFields="true"
-    AssetName="DESERT_BRICK_VERTICAL_TRIM"
-    imageFile="@assetFile=desert_brick_vertical_trim.jpg"
-    UseMips="true"
-    isHDRImage="false"
-    imageType="Albedo" />

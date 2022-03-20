@@ -1,0 +1,4 @@
+<SoundAsset
+    AssetName="playerSlide"
+    soundFile="@assetFile=player_slide.ogg"
+    VersionId="1"/>

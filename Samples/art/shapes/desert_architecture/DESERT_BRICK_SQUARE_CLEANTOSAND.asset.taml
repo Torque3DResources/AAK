@@ -1,0 +1,16 @@
+<MaterialAsset
+    AssetName="DESERT_BRICK_SQUARE_CLEANTOSAND"
+    materialDefinitionName="DESERT_BRICK_SQUARE_CLEANTOSAND"
+    VersionId="1">
+    <Material
+        Name="DESERT_BRICK_SQUARE_CLEANTOSAND"
+        mapTo="DESERT_BRICK_SQUARE_CLEANTOSAND"
+        translucentBlendOp="None"
+        showFootprints="false"
+        customFootstepSound="playerFootstepStone">
+        <Material.Stages>
+            <Stages_beginarray
+                DiffuseMapAsset="AAK:desert_brick_square_cleantosand_image"/>
+        </Material.Stages>
+    </Material>
+</MaterialAsset>
