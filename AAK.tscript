@@ -12,12 +12,12 @@ function AAK::initServer(%this)
    //Sample content
    if(IsDirectory("./Samples/"))
    {
-      %this.queueExec("./scripts/server/shapeBase");
+      %this.queueExec("./Samples/scripts/server/shapeBase");
       //%this.queueExec("./scripts/server/aiPlayer");
-      %this.queueExec("./scripts/server/camera");
-      %this.queueExec("./scripts/server/commands");
-      %this.queueExec("./scripts/server/player");
-      %this.queueExec("./scripts/server/spawn");
+      %this.queueExec("./Samples/scripts/server/camera");
+      %this.queueExec("./Samples/scripts/server/commands");
+      %this.queueExec("./Samples/scripts/server/player");
+      %this.queueExec("./Samples/scripts/server/spawn");
    }
    
 	%this.queueExec("./scripts/server/ActionAdventureGame");
@@ -31,10 +31,10 @@ function AAK::onCreateGameServer(%this)
    //Sample content
    if(IsDirectory("./Samples/"))
    {
-      %this.registerDatablock("./scripts/datablocks/sounds");
-      %this.registerDatablock("./scripts/datablocks/player");
-      %this.registerDatablock("./scripts/datablocks/aiPlayer");
-      %this.registerDatablock("./scripts/datablocks/dust");
+      %this.registerDatablock("./Samples/scripts/datablocks/sounds");
+      %this.registerDatablock("./Samples/scripts/datablocks/player");
+      %this.registerDatablock("./Samples/scripts/datablocks/aiPlayer");
+      %this.registerDatablock("./Samples/scripts/datablocks/dust");
    }
 	
 	%this.registerDatablock("./scripts/datablocks/camera");
@@ -54,7 +54,7 @@ function AAK::initClient(%this)
       if (!$Server::Dedicated)
       {
          //client scripts
-         $KeybindPath = "./scripts/client/default.keybinds." @ $TorqueScriptFileExtension;
+         $KeybindPath = "./Samples/scripts/client/defaultkeybinds." @ $TorqueScriptFileExtension;
          exec($KeybindPath);
          
          %prefPath = getPrefpath();
@@ -64,10 +64,10 @@ function AAK::initClient(%this)
          //gui
          //
 
-         exec("./scripts/client/inputCommands"); 
+         exec("./Samples/scripts/client/inputCommands"); 
            
          //client only sounds
-         %this.queueExec("./art/clientMusic");
+         %this.queueExec("./Samples/art/clientMusic");
       }
    }
 }
