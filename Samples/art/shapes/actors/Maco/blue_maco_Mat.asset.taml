@@ -1,0 +1,16 @@
+<MaterialAsset
+    AssetName="blue_maco_Mat"
+    materialDefinitionName="blue_maco_Mat"
+    VersionId="1">
+    <Material
+        Name="blue_maco_Mat"
+        mapTo="blue_maco_mat_body_diffusetex"
+        inheritFrom=" base_maco_Mat "
+        castDynamicShadows="1">
+        <Material.Stages>
+            <Stages_beginarray
+                DiffuseMapAsset="AAK:blue_maco_mat_body_diffusetex"
+                doubleSided="true"/>
+        </Material.Stages>
+    </Material>
+</MaterialAsset>
