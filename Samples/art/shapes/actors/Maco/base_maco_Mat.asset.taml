@@ -1,0 +1,15 @@
+<MaterialAsset
+    AssetName="base_maco_Mat"
+    materialDefinitionName="base_maco_Mat"
+    VersionId="1">
+    <Material
+        Name="base_maco_Mat"
+        mapTo="base_maco_mat_body_diffusetex"
+        castDynamicShadows="1">
+        <Material.Stages>
+            <Stages_beginarray
+                DiffuseMapAsset="AAK:base_maco_mat_body_diffusetex"
+                doubleSided="true"/>
+        </Material.Stages>
+    </Material>
+</MaterialAsset>

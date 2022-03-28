@@ -1,0 +1,19 @@
+<MaterialAsset
+    AssetName="DECAL_PlayerFootprintMat"
+    materialDefinitionName="DECAL_PlayerFootprintMat"
+    VersionId="1">
+    <Material
+        Name="DECAL_PlayerFootprintMat"
+        mapTo="DECAL_PlayerFootprintMat"
+        castShadows="false"
+        translucent="true"
+        translucentBlendOp="PreMul"
+        castDynamicShadows="0"
+        originalAssetName="DECAL_PlayerFootprintMat">
+        <Material.Stages>
+            <Stages_beginarray
+                DiffuseMapAsset="AAK:footprint"
+                NormalMapAsset="AAK:footprint_normal"/>
+        </Material.Stages>
+    </Material>
+</MaterialAsset>

@@ -1,8 +1,8 @@
 <ImageAsset
     canSave="true"
     canSaveDynamicFields="true"
-    AssetName="blue_maco_mat_body_diffusetex"
-    imageFile="@assetFile=blue_maco_mat_body_diffusetex.png"
+    AssetName="footpuff"
+    imageFile="@assetFile=footpuff.png"
     UseMips="true"
     isHDRImage="false"
     imageType="Albedo" />

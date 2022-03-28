@@ -1,0 +1,16 @@
+<MaterialAsset
+    AssetName="cnst_maco_Mat"
+    materialDefinitionName="cnst_maco_Mat"
+    VersionId="1">
+    <Material
+        Name="cnst_maco_Mat"
+        mapTo="cnst_maco_mat_face_diffusetex"
+        castDynamicShadows="1">
+        <Material.Stages>
+            <Stages_beginarray
+                DiffuseMapAsset="AAK:cnst_maco_mat_face_diffusetex"
+                SubSurfaceRolloff="0.1"
+                doubleSided="true"/>
+        </Material.Stages>
+    </Material>
+</MaterialAsset>
