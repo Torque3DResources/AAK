@@ -100,7 +100,7 @@ static const F32 sNewAnimationTickTime = 1.0f;
 static const F32 sMountPendingTickWait = 13.0f * F32(TickMs);
 
 // Number of ms before we pick non-contact animations
-static const S32 sContactTickTime = 230;	//230 ms
+static const S32 sContactTickTime = TickMs*2.0f;	//64 ms
 
 // Player is kept out of walls by this much during climb/wall/ledge 
 static const F32 sSurfaceDistance = 0.05f;
@@ -140,7 +140,8 @@ static U32 sCollisionMoveMask =  TerrainObjectType       |
                                  PlayerObjectType        |
                                  StaticShapeObjectType   | 
                                  VehicleObjectType       |
-                                 PhysicalZoneObjectType;
+                                 PhysicalZoneObjectType  |
+                                 PathShapeObjectType;
 
 static U32 sServerCollisionContactMask = sCollisionMoveMask |
                                          ItemObjectType     |
@@ -3017,13 +3018,13 @@ void AAKPlayer::updateMove(const Move* move)
          y -= M_2PI_F;
 
       
-	  if (move->freeLook && ((isMounted() && getMountNode() == 0) || (con && !con->isFirstPerson())))
+	  if (!isAnimationLocked() && move->freeLook && ((isMounted() && getMountNode() == 0) || (con && !con->isFirstPerson())))
       {
          mHead.z = mClampF(mHead.z + y,
                            -mDataBlock->maxFreelookAngle,
                            mDataBlock->maxFreelookAngle);
       }
-      else if((con && con->isFirstPerson()) || !con)
+      else if(!isAnimationLocked() && (con && con->isFirstPerson()) || !con)
       {
          mRot.z += y;
          // Rotate the head back to the front, center horizontal
@@ -3058,7 +3059,7 @@ void AAKPlayer::updateMove(const Move* move)
 		}
 
 		//Ubiq: Lorne: third-person behavior, rotate to face movement direction
-		else if((!mJumpState.isCrouching && moveVec.len() > 0) && (con && !con->isFirstPerson()))
+		else if(!isAnimationLocked() && (!mJumpState.isCrouching && moveVec.len() > 0) && (con && !con->isFirstPerson()))
 		{
 			F32 yaw, pitch;
 			MathUtils::getAnglesFromVector(moveVec, yaw, pitch);
@@ -4602,8 +4603,9 @@ void AAKPlayer::updateAttachment() {
    RayInfo rInfo;
    MatrixF mat = getTransform();
    mat.getColumn(3, &pos);
-   if (gServerContainer.castRay(Point3F(pos.x, pos.y, pos.z + 0.1f),
-      Point3F(pos.x, pos.y, pos.z - 1.0f),
+   F32 height = mObjBox.getExtents().z + 0.1;
+   if (gServerContainer.castRay(Point3F(pos.x, pos.y, pos.z + height / 2),
+      Point3F(pos.x, pos.y, pos.z - height/2),
       PathShapeObjectType, &rInfo))
    {
       if (rInfo.object->getTypeMask() & PathShapeObjectType) //Ramen
@@ -4937,7 +4939,8 @@ void AAKPlayer::updateActionThread()
             // Emit footpuffs.
 
             if (!footfallDustOverride && rInfo.t <= 0.5f && mWaterCoverage == 0.0f
-                                         && material && material->mShowDust )
+                                         && material && material->mShowDust
+                                         && mDataBlock->footPuffEmitter != nullptr)
             {
                // New emitter every time for visibility reasons
                ParticleEmitter * emitter = new ParticleEmitter;
