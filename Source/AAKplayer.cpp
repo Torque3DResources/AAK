@@ -335,7 +335,6 @@ IMPLEMENT_CALLBACK( AAKPlayerData, onLeaveMissionArea, void, ( AAKPlayer* obj ),
 
 AAKPlayerData::AAKPlayerData()
 {
-   shadowEnable = true;
    shadowSize = 256;
    shadowProjectionDistance = 14.0f;
 
