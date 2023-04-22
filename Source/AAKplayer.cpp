@@ -3223,7 +3223,7 @@ void AAKPlayer::updateMove(const Move* move)
 	}
 
 	//if we haven't been in contact for a while, but we just detected a runSurface above
-	if(mContactTimer >= sContactTickTime && mRunSurface && mDamageState == Enabled)
+	if(mContactTimer >= sContactTickTime && mRunSurface && mDamageState == Enabled && !isAnimationLocked())
 	{
 		//we know we've *just* landed this tick
 		//play the land animation
@@ -4057,7 +4057,7 @@ void AAKPlayer::updateMove(const Move* move)
    }
 	
    //Ubiq: Lorne: Enter the jump state?
-   if (move->trigger[sJumpTrigger] && !isMounted())
+   if (move->trigger[sJumpTrigger] && !isMounted() && !isAnimationLocked())
    {
       if (canJump() && !mJumpState.active)
       {
@@ -4106,7 +4106,7 @@ void AAKPlayer::updateMove(const Move* move)
    // While BLOCK_USER_CONTROL is set in anim_clip_flags, the user won't be able to
    // make the player character jump.
    //if (move->trigger[sJumpTrigger] && canJump() && !isAnimationLocked() && mJumpState.active && mJumpState.isCrouching)
-   if(mJumpState.active && mJumpState.isCrouching)
+   if(mJumpState.active && mJumpState.isCrouching && !isAnimationLocked())
    {      
       mJumpState.crouchDelay -= TickMs;
 
@@ -4203,7 +4203,7 @@ void AAKPlayer::updateMove(const Move* move)
          mJumpSurfaceLastContact++;
    }*/
 
-   if (move->trigger[sJumpJetTrigger] && !isMounted() && canJetJump())
+   if (move->trigger[sJumpJetTrigger] && !isMounted() && canJetJump() && !isAnimationLocked())
 	{
       mJetting = true;
 
@@ -4797,6 +4797,9 @@ void AAKPlayer::setActionThread(U32 action, bool forward, bool hold, bool wait, 
 {
    //are we already playing this animation (in the same direction)?
    if (mActionAnimation.action == action && mActionAnimation.forward == forward && !forceSet)
+      return;
+
+   if (isAnimationLocked())
       return;
 
    //is it a valid animation?
