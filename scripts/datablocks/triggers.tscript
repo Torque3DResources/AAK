@@ -290,11 +290,19 @@ function CameraTrigger_Path::onEnterTrigger(%this,%trigger,%obj)
 {
    //Parent::onEnterTrigger(%this,%trigger,%obj);
    %con = %obj.getControllingClient();
-      
+   if (!isObject(%con.cameraGoalPath)) return;
+   
    //setup cameraGoalPath
-   %con.cameraGoalPath.setPlayerPathObject(%trigger.playerPath);
-   %con.cameraGoalPath.setCameraPathObject(%trigger.cameraPath);
-   %con.cameraGoalPath.setLookAtPlayer(%trigger.lookAtPlayer);
+   if (isObject(%trigger.playerPath))
+   {
+      %con.cameraGoalPath.setPlayerPathObject(%trigger.playerPath);
+      %con.cameraGoalPath.setLookAtPlayer(%trigger.lookAtPlayer);
+   }
+   else
+      %con.cameraGoalPath.setLookAtPlayer(true);
+      
+   if (isObject(%trigger.cameraPath))
+      %con.cameraGoalPath.setCameraPathObject(%trigger.cameraPath, 10);
    
    //set cameraGoalFollower to follow cameraGoalPath
    if(%trigger.time $= "")

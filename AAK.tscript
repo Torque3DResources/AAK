@@ -10,7 +10,7 @@ function AAK::onDestroy(%this)
 function AAK::initServer(%this)
 {
    //Sample content
-   if(IsDirectory("./Samples/"))
+   if(IsDirectory(%this.getModulePath() @ "/Samples/"))
    {
       %this.queueExec("./Samples/scripts/server/shapeBase");
       //%this.queueExec("./scripts/server/aiPlayer");
@@ -29,7 +29,7 @@ function AAK::initServer(%this)
 function AAK::onCreateGameServer(%this)
 {
    //Sample content
-   if(IsDirectory("./Samples/"))
+   if(IsDirectory(%this.getModulePath() @ "/Samples/"))
    {
       %this.registerDatablock("./Samples/scripts/datablocks/sounds");
       %this.registerDatablock("./Samples/scripts/datablocks/player");
@@ -49,7 +49,7 @@ function AAK::onDestroyGameServer(%this)
 //This is called when the client is initially set up by the game application
 function AAK::initClient(%this)
 {
-   if(IsDirectory("./Samples/"))
+   if(IsDirectory(%this.getModulePath() @ "/Samples/"))
    {
       if (!$Server::Dedicated)
       {

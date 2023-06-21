@@ -69,7 +69,7 @@ void CameraGoalTarget::processTick(const Move*)
    MathUtils::getAnglesFromVector(mCameraVector, mYaw, mPitch);
 
    VectorF offsetCamVec;
-   MathUtils::getVectorFromAngles(offsetCamVec, mYaw + mDegToRad(mTargetPitch), mPitch + mDegToRad(mTargetYaw));
+   MathUtils::getVectorFromAngles(offsetCamVec, mYaw + mDegToRad(mTargetYaw), mPitch + mDegToRad(mTargetPitch));
 
    //maintain radius
    mCameraVector.normalize(mRadius);
@@ -77,8 +77,8 @@ void CameraGoalTarget::processTick(const Move*)
    //maintain position
    mPosition = mCenterPosition + mCameraVector;
 
-   mRot.x = mPitch;
-   mRot.z = mYaw + M_PI_F;
+   mRot.x = mPitch + mDegToRad(mTargetPitch);
+   mRot.z = mYaw + M_PI_F + mDegToRad(mTargetYaw);
 
    if (isClientObject())
    {
@@ -177,7 +177,7 @@ U32 CameraGoalTarget::packUpdate(NetConnection* con, U32 mask, BitStream* stream
 
          //hack to keep sending updates until player is ghosted
          if (id == -1)
-            setMaskBits(PlayerMask);
+            setMaskBits(TargetMask);
       }
    }
 

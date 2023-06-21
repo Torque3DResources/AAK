@@ -53,7 +53,7 @@ To end of function
 In sceneObject.h
 
 Add:
-private:
+   protected:
       bool mAllowPlayerClimb;
       bool mAllowPlayerLedgeGrab;
       bool mAllowPlayerWallHug;

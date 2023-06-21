@@ -1251,9 +1251,9 @@ void AAKPlayerData::initPersistFields()
       addArray( "Mounted Images", ShapeBase::MaxMountedImages );
 
       INITPERSISTFIELD_SHAPEASSET_ARRAY(ShapeFP, ShapeBase::MaxMountedImages, AAKPlayerData, "@brief File name of this player's shape that will be used in conjunction with the corresponding mounted image.\n\n"
-            "These optional parameters correspond to each mounted image slot to indicate a shape that is rendered "
-            "in addition to the mounted image shape.  Typically these are a player's arms (or arm) that is "
-            "animated along with the mounted image's state animation sequences.\n");
+         "These optional parameters correspond to each mounted image slot to indicate a shape that is rendered "
+         "in addition to the mounted image shape.  Typically these are a player's arms (or arm) that is "
+         "animated along with the mounted image's state animation sequences.\n");
 
       addProtectedField("shapeNameFP", TypeShapeFilename, Offset(mShapeFPName, AAKPlayerData), &_setShapeFPData, &defaultProtectedGetFn, ShapeBase::MaxMountedImages,
          "@brief File name of this player's shape that will be used in conjunction with the corresponding mounted image.\n\n"
@@ -3991,7 +3991,7 @@ void AAKPlayer::updateMove(const Move* move)
 
       // get the head pitch and add it to the moveVec
       // This more accurate swim vector calc comes from Matt Fairfax
-      MatrixF xRot, zRot;
+      MatrixF xRot;
       xRot.set(EulerF(mHead.x, 0, 0));
       zRot.set(EulerF(0, 0, mRot.z));
       MatrixF rot;
@@ -4191,9 +4191,9 @@ void AAKPlayer::updateMove(const Move* move)
          setMaskBits(TriggerMask);
       }
    }
-   /*else
+   else
    {
-      if (jumpSurface) 
+      if (mJumpSurface) 
       {
          if (mJumpDelay > 0)
             mJumpDelay--;
@@ -4201,7 +4201,7 @@ void AAKPlayer::updateMove(const Move* move)
       }
       else
          mJumpSurfaceLastContact++;
-   }*/
+   }
 
    if (move->trigger[sJumpJetTrigger] && !isMounted() && canJetJump() && !isAnimationLocked())
 	{
@@ -4270,6 +4270,13 @@ void AAKPlayer::updateMove(const Move* move)
 	{
 		mVelocity -= mVelocity * mDataBlock->groundFriction * TickSec;
 	}
+   F32 vertDrag;
+   if ((mFalling) && ((move->trigger[sJumpTrigger]) || (this->mIsAiControlled)))
+      vertDrag = mDataBlock->vertDragFalling;
+   else
+      vertDrag = mDataBlock->vertDrag;
+
+   VectorF angledDrag = VectorF(mDrag, mDrag, vertDrag);
    // Container buoyancy & drag
    if (mBuoyancy != 0)
    {     
@@ -4292,10 +4299,10 @@ void AAKPlayer::updateMove(const Move* move)
    }
 
    // Apply drag
-   if ( mSwimming )
-      mVelocity -= mVelocity * mDrag * TickSec * ( mVelocity.len() / mDataBlock->maxUnderwaterForwardSpeed );
+   if (mSwimming)
+      mVelocity -= mVelocity * angledDrag * TickSec * (mVelocity.len() / mDataBlock->maxUnderwaterForwardSpeed);
    else
-      mVelocity -= mVelocity * mDrag * TickSec;
+      mVelocity -= mVelocity * angledDrag * TickSec;
 
    // Clamp very small velocity to zero
    if ( mVelocity.isZero() )
@@ -5240,10 +5247,10 @@ void AAKPlayer::pickActionAnimation()
 	//Ubiq: Sliding
 	else if (mSlideState.active)
 	{
-		Point3F forward;
-		getTransform().getColumn(1, &forward);
+		Point3F forwardVec;
+		getTransform().getColumn(1, &forwardVec);
 
-		if(mDot(mSlideState.surfaceNormal, forward) < 0)
+		if(mDot(mSlideState.surfaceNormal, forwardVec) < 0)
 			action = AAKPlayerData::SlideBackAnim;
 		else
 			action = AAKPlayerData::SlideFrontAnim;
@@ -6798,8 +6805,11 @@ void AAKPlayer::setRenderPosition(const Point3F& pos, const Point3F& rot, F32 dt
 
 			#ifdef ENABLE_DEBUGDRAW
          {
-            DebugDrawer::get()->drawLine(pos, pos + normal, ColorI::BLUE);
-            DebugDrawer::get()->setLastTTL(TickMs);
+            if (sRenderHelpers)
+            {
+               DebugDrawer::get()->drawLine(pos, pos + normal, ColorI::BLUE);
+               DebugDrawer::get()->setLastTTL(TickMs);
+            }
          }
 			#endif
 
@@ -8437,6 +8447,8 @@ void AAKPlayer::consoleInit()
 
 void AAKPlayer::initPersistFields()
 {
+   addField("inWater", TypeBool, Offset(mInWater, AAKPlayer),
+      "@brief script exposure of inWater state.");
    addField("isFalling", TypeBool, Offset(mFalling, AAKPlayer),
       "@brief script exposure of falling state.");
    addField("isRunSurface", TypeBool, Offset(mRunSurface, AAKPlayer),
