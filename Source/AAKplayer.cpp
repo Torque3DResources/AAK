@@ -31,7 +31,7 @@
 // Copyright (C) 2015 Faust Logic, Inc.
 //~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~~//
 #include "platform/platform.h"
-#include "./AAKPlayer.h"
+#include "./AAKplayer.h"
 
 #include "platform/profiler.h"
 #include "math/mMath.h"
