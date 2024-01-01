@@ -16,6 +16,7 @@
 #include "T3D/physics/physicsCollision.h"
 
 #include "math/mathUtils.h"
+#include "AAKUtils.h"
 
 IMPLEMENT_CO_NETOBJECT_V1(CameraTrigger);
 void CameraTrigger::initPersistFields()
@@ -59,7 +60,7 @@ void CameraTrigger::syncOrientation()
    if (!Sim::findObject(mObjectLinkId, mOrientBase))
       return;
 
-   MathUtils::getAnglesFromVector(mOrientBase->getTransform().getForwardVector(), mForcedYaw, mForcedPitch);
+   AAKUtils::getAnglesFromVector(mOrientBase->getTransform().getForwardVector(), mForcedYaw, mForcedPitch);
    mForcedYaw = mRadToDeg(mForcedYaw) + 180;
    mForcedPitch = mRadToDeg(-mForcedPitch);
    mForcedRadius = Point3F(mOrientBase->getTransform().getPosition() - getPosition()).len();

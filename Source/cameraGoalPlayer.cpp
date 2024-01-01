@@ -32,6 +32,7 @@
 #include "console/consoleTypes.h"
 #include "T3D/player.h"
 #include "gfx/sim/debugDraw.h"
+#include "AAKUtils.h"
 //----------------------------------------------------------------------------
 static bool sRenderCameraGoalRays = false;
 
@@ -303,7 +304,7 @@ void CameraGoalPlayer::processTick(const Move* move)
 
 		//grab current player forward vector
 		mPlayerObject->getRenderTransform().getColumn(1, &mPlayerForward);
-		MathUtils::getAnglesFromVector(mPlayerForward, mPlayerForwardYaw, mPlayerForwardPitch);
+      AAKUtils::getAnglesFromVector(mPlayerForward, mPlayerForwardYaw, mPlayerForwardPitch);
 
 		//if this is the first tick we have a player
 		if(mFirstTickWithPlayer)
@@ -384,7 +385,7 @@ void CameraGoalPlayer::processTick(const Move* move)
 		//remember unlocked yaw & pitch in case we need them
 		VectorF unlockedVec = mPosition - mPlayerPos;
 		F32 unlockedYaw, unlockedPitch;
-		MathUtils::getAnglesFromVector(unlockedVec, unlockedYaw, unlockedPitch);
+      AAKUtils::getAnglesFromVector(unlockedVec, unlockedYaw, unlockedPitch);
 
 		//--------------------------------------------
 		// yaw
@@ -646,7 +647,7 @@ void CameraGoalPlayer::autoPitch()
 				//make a vector between this hit point and player pos
 				VectorF collToPlayerVec = playerPos - rInfo.point;
 				F32 cyaw, cpitch;
-				MathUtils::getAnglesFromVector(collToPlayerVec, cyaw, cpitch);
+            AAKUtils::getAnglesFromVector(collToPlayerVec, cyaw, cpitch);
 				totalPitch += cpitch * weight;
 				totalWeight += weight;
 			}
@@ -1124,7 +1125,7 @@ F32 CameraGoalPlayer::findAutoYaw()
 	{
 		averageNormal /= hits;
 		F32 averageNormalYaw, averageNormalPitch;
-		MathUtils::getAnglesFromVector(averageNormal, averageNormalYaw, averageNormalPitch);
+      AAKUtils::getAnglesFromVector(averageNormal, averageNormalYaw, averageNormalPitch);
 		return averageNormalYaw;
 	}
 }

@@ -70,6 +70,7 @@
 #include "materials/baseMatInstance.h"
 #include "terrain/terrData.h"
 #include "gfx/sim/debugDraw.h"
+#include "AAKUtils.h"
 
 #ifdef TORQUE_EXTENDED_MOVE
    #include "T3D/gameBase/extended/extendedMove.h"
@@ -3061,7 +3062,7 @@ void AAKPlayer::updateMove(const Move* move)
 		else if(!isAnimationLocked() && (!mJumpState.isCrouching && moveVec.len() > 0) && (con && !con->isFirstPerson()))
 		{
 			F32 yaw, pitch;
-			MathUtils::getAnglesFromVector(moveVec, yaw, pitch);
+            AAKUtils::getAnglesFromVector(moveVec, yaw, pitch);
 
 			F32 deltaYaw = yaw - mRot.z;
 			//fix it -PI to +PI
@@ -3539,7 +3540,7 @@ void AAKPlayer::updateMove(const Move* move)
 
 					//get the pitch of the surface
 					F32 surfaceYaw, surfacePitch;
-					MathUtils::getAnglesFromVector(mClimbState.surfaceNormal, surfaceYaw, surfacePitch);
+               AAKUtils::getAnglesFromVector(mClimbState.surfaceNormal, surfaceYaw, surfacePitch);
 
 					F32 desiredPitch = M_PI_F / 2.0f - surfacePitch;
 
