@@ -5,6 +5,7 @@
 #include "gfx/sim/debugDraw.h"
 #include "math/mathUtils.h"
 #include "math/mathIO.h"
+#include "AAKUtils.h"
 
 IMPLEMENT_CO_NETOBJECT_V1(CameraGoalTarget);
 
@@ -66,7 +67,7 @@ void CameraGoalTarget::processTick(const Move*)
    mRadius = dist;
 
    //Re-zero based on our mainline vector between the player and target
-   MathUtils::getAnglesFromVector(mCameraVector, mYaw, mPitch);
+   AAKUtils::getAnglesFromVector(mCameraVector, mYaw, mPitch);
 
    VectorF offsetCamVec;
    MathUtils::getVectorFromAngles(offsetCamVec, mYaw + mDegToRad(mTargetYaw), mPitch + mDegToRad(mTargetPitch));

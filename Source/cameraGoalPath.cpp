@@ -26,6 +26,7 @@
 #include "T3D/gameBase/gameConnection.h"
 #include "gfx/sim/debugDraw.h"
 #include "math/mathUtils.h"
+#include "AAKUtils.h"
 
 IMPLEMENT_CO_NETOBJECT_V1(CameraGoalPath);
 
@@ -93,7 +94,7 @@ void CameraGoalPath::processTick(const Move*)
 		Point3F camToPlayerVec = playerPos - mPosition;
 		camToPlayerVec.normalizeSafe();
 		F32 camToPlayerYaw, camToPlayerPitch;
-		MathUtils::getAnglesFromVector(camToPlayerVec, camToPlayerYaw, camToPlayerPitch);
+      AAKUtils::getAnglesFromVector(camToPlayerVec, camToPlayerYaw, camToPlayerPitch);
 
 		//stuff that back into a quat
 		MatrixF xRot, zRot;

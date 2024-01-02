@@ -31,6 +31,7 @@
 #include "gui/worldEditor/editor.h"
 #include "console/consoleTypes.h"
 #include "T3D/fx/cameraFXMgr.h"
+#include "AAKUtils.h"
 
 //----------------------------------------------------------------------------
 
@@ -289,7 +290,7 @@ void CameraGoalFollower::processTick(const Move* move)
 
 		//look in goalForward direction
 		F32 yaw, pitch;
-		MathUtils::getAnglesFromVector( goalForward, yaw, pitch );
+      AAKUtils::getAnglesFromVector( goalForward, yaw, pitch );
 
 		//there is a *tiny* glitch at 180 yaw if we just use yaw and pitch
 		//so we do a little pre-processing and everything is perfect
