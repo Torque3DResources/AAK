@@ -6288,8 +6288,12 @@ F32 AAKPlayer::_doCollisionImpact( const Collision *collision, bool fallingColli
    if ( ((bd > mDataBlock->minImpactSpeed && fallingCollision) || bd > mDataBlock->minLateralImpactSpeed) 
       && !mMountPending )
    {
-      if ( !isGhost() )
-         onImpact( collision->object, collision->normal * bd );
+      if (!isGhost())
+      {
+         onImpact(collision->object, collision->normal * bd);
+         mImpactSound = AAKPlayerData::ImpactNormal;
+         setMaskBits(ImpactMask);
+      }
 
       if (mDamageState == Enabled && mState != RecoverState) 
       {
@@ -6313,13 +6317,6 @@ F32 AAKPlayer::_doCollisionImpact( const Collision *collision, bool fallingColli
             setState(RecoverState, recover);
          }*/
       }
-   }
-
-   if ( isServerObject() && 
-      (bd > (mDataBlock->minImpactSpeed / 3.0f) || bd > (mDataBlock->minLateralImpactSpeed / 3.0f )) ) 
-   {
-      mImpactSound = AAKPlayerData::ImpactNormal;
-      setMaskBits(ImpactMask);
    }
 
    return bd;
