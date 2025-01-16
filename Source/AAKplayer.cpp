@@ -454,6 +454,10 @@ AAKPlayerData::AAKPlayerData()
    actionCount = 0;
    lookAction = 0;
 
+   dMemset(spineNode, 0, sizeof(spineNode));
+
+   pickupDelta = 0.0f;
+
    // size of bounding box
    boxSize.set(1.0f, 1.0f, 2.3f);
    crouchBoxSize.set(1.0f, 1.0f, 2.0f);
@@ -471,7 +475,7 @@ AAKPlayerData::AAKPlayerData()
    boxHeadFrontPercentage = 1;
 
    for (S32 i = 0; i < MaxSounds; i++)
-      INIT_ASSET_ARRAY(PlayerSound, i);
+      INIT_SOUNDASSET_ARRAY(PlayerSound, i);
 
    footPuffEmitter = NULL;
    footPuffID = 0;
@@ -3273,7 +3277,7 @@ void AAKPlayer::updateMove(const Move* move)
 					{
 						//enter wallHug state
 						mWallHugState.active = true;
-						mWallHugState.surfaceNormal = wallPlane;
+						mWallHugState.surfaceNormal = wallPlane.getNormal();
 						mStoppingTimer = 0;
 					}
 				}
@@ -3299,7 +3303,7 @@ void AAKPlayer::updateMove(const Move* move)
 		{
 			//We're wall hugging...
 			mWallHugState.active = true;
-			mWallHugState.surfaceNormal = wallPlane;
+			mWallHugState.surfaceNormal = wallPlane.getNormal();
 			mWallHugState.direction = MOVE_DIR_NONE;
 
 			//see if we can snap to the wall
@@ -3397,7 +3401,7 @@ void AAKPlayer::updateMove(const Move* move)
 					{
 						//enter climb state
 						mClimbState.active = true;
-						mClimbState.surfaceNormal = climbPlane;
+						mClimbState.surfaceNormal = climbPlane.getNormal();
 						mClimbState.ignoreClimb = false;
 						mJumpState.active = false;
 						mJumping = false;
@@ -3427,13 +3431,13 @@ void AAKPlayer::updateMove(const Move* move)
       {
          mClimbState.active = false;
          mClimbState.ignoreClimb = true;
-         mClimbState.surfaceNormal = climbPlane;
+         mClimbState.surfaceNormal = climbPlane.getNormal();
          acc.set(mClimbState.surfaceNormal * (mDataBlock->jumpForceClimb) / getMass());
       }
 		else
 		{
 			//We're climbing...
-			mClimbState.surfaceNormal = climbPlane;
+			mClimbState.surfaceNormal = climbPlane.getNormal();
 			mClimbState.direction = MOVE_DIR_NONE;
 
 			//force states
@@ -4617,6 +4621,9 @@ void AAKPlayer::updateAttachment() {
    {
       if (rInfo.object->getTypeMask() & PathShapeObjectType) //Ramen
       {
+         if (!mJumping && !mClimbState.active && !mLedgeState.active && !mSwimming)
+            setPosition(rInfo.point,getRotation());
+
          if (getParent() == NULL)
          { // ONLY do this if we are not parented
             //Con::printf("I'm on a pathshape object. Going to attempt attachment.");
