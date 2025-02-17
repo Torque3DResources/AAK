@@ -1,0 +1,94 @@
+/*
+%player.dieOnNextCollision = false;
+%player.setDamageLevel(saveData.playerDamage);
+%player.setTransform(saveData.playerTransform);
+%this.cameraGoalPlayer.setTransform(saveData.cameraGoalPlayerTransform);
+%this.cameraGoalFollower.setTransform(saveData.cameraGoalFollowerTransform);
+*/
+
+function AAK::insertSaveData(%this)
+{
+    $saveRecord.add("<AAK>","");
+	for (%clientIndex = 0; %clientIndex < ClientGroup.getCount(); %clientIndex++)
+	{
+		%cl = ClientGroup.getObject(%clientIndex);
+        if (isObject(%cl) && isObject(%cl.player))
+        {
+            %savestring = %cl.player.getTransform();
+            %savestring = %savestring SPC (%cl.player.dieOnNextCollision ? "1" : "0");
+            %savestring = %savestring SPC %cl.player.getDamageLevel();
+            %savestring = %savestring SPC %cl.cameraGoalPlayer.getTransform(); 
+            %savestring = %savestring SPC %cl.cameraGoalFollower.getTransform();
+            $saveRecord.add(%cl.connectData,%savestring);
+        }
+        else
+            $saveRecord.add("","");
+    }
+}
+
+function AAK::parseSaveData(%this)
+{
+    %count = $saveRecord.count();    
+    %curModule = "";
+    for (%i=0;%i<%count;%i++)
+    {
+        %temp = $saveRecord.getKey(%i);
+        if (strchrpos(getword(%temp,0),"<")>-1)
+        {
+            %curModule = stripChars(%temp,"< >");
+            %i++;//skip module divide entries
+        }
+        if (%curModule $= "AAK")
+        {
+            %curChar = $saveRecord.getKey(%i);
+            if (!isObject(%this.charRecord[%curChar]))
+                %this.charRecord[%curChar] = new arrayobject(){};
+                
+            %this.charRecord[%curChar].empty();
+            %this.charRecord[%curChar].add("saveTransform", getwords($saveRecord.getValue(%i), 0, 6));
+            %this.charRecord[%curChar].add("dieOnNextCollision", getword($saveRecord.getValue(%i), 7));
+            %this.charRecord[%curChar].add("damageLevel", getword($saveRecord.getValue(%i), 8));
+            %this.charRecord[%curChar].add("playerCamGoalTransform", getwords($saveRecord.getValue(%i), 9, 15));
+            %this.charRecord[%curChar].add("followerCamGoalTransform", getwords($saveRecord.getValue(%i), 16, 22));
+        }
+    }
+    if (!isObject(%this.spawned))
+        %this.spawned = new arrayobject();
+    %this.spawned.empty();
+}
+
+function AAK::getConnectionSave(%this, %client)
+{
+    if (!(isObject(%this.charRecord[%client.connectData]))) return;
+    
+    if (%this.charRecord[%client.connectData].getValueFromKey("saveTransform") $= "") 
+      return;
+    
+    %client.player.setTransform(%this.charRecord[%client.connectData].getValueFromKey("saveTransform"));
+    
+    %client.player.dieOnNextCollision = %this.charRecord[%client.connectData].getValueFromKey("dieOnNextCollision");
+    %client.player.setDamageLevel(%this.charRecord[%client.connectData].getValueFromKey("setDamageLevel"));
+    %client.player.cameraGoalPlayer.setTransform(%this.charRecord[%client.connectData].getValueFromKey("playerCamGoalTransform"));
+    %client.player.cameraGoalFollower.setTransform(%this.charRecord[%client.connectData].getValueFromKey("followerCamGoalTransform"));
+
+    resetCamera(0);
+}
+
+function AAK::onSaveLoaded(%this)
+{    
+    AAK.finishMapLoad();
+}
+
+function AAK::onLoadMap(%this)
+{
+   if (readSave("Visitor") == false)
+   {
+        writeSave("Visitor");
+        Core_ClientServer.finishMapLoad();
+   }
+}
+
+function AAK::finishMapLoad(%this)
+{
+    Core_ClientServer.finishMapLoad();
+}

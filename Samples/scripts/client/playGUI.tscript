@@ -1,0 +1,120 @@
+function AAK::PlayGUI_onWake(%this)
+{
+   if(!isObject(UbiqUI))
+   {
+      //Ubiq: tutorial/feature/credit notes
+      new GuiContainer(UbiqUI) {
+         HorizSizing = "right";
+         VertSizing = "bottom";
+         position = "0 0";
+         Extent = "1024 768";
+         MinExtent = "8 8";
+         canSave = "0";
+         
+         new GuiBitmapCtrl(tutorialHUD) {
+            canSaveDynamicFields = "0";
+            Enabled = "1";
+            isContainer = "0";
+            Profile = "GuiDefaultProfile";
+            HorizSizing = "center";
+            VertSizing = "top";
+            position = "256 654";
+            Extent = "512 64";
+            MinExtent = "8 2";
+            canSave = "0";
+            Visible = "0";
+            hovertime = "1000";
+            bitmap = "AAK:blank_image";
+            wrap = "0";
+         };
+         new GuiBitmapCtrl(welcomeHUD) {
+            canSaveDynamicFields = "0";
+            Enabled = "1";
+            isContainer = "0";
+            Profile = "GuiDefaultProfile";
+            HorizSizing = "center";
+            VertSizing = "bottom";
+            position = "256 47";
+            Extent = "512 128";
+            MinExtent = "512 128";
+            canSave = "0";
+            Visible = "0";
+            hovertime = "1000";
+            bitmap = "AAK:blank_image";
+            wrap = "0";
+         };
+         new GuiBitmapCtrl(featureHUD) {
+            canSaveDynamicFields = "0";
+            Enabled = "1";
+            isContainer = "0";
+            Profile = "GuiDefaultProfile";
+            HorizSizing = "left";
+            VertSizing = "bottom";
+            position = "477 48";
+            Extent = "512 128";
+            MinExtent = "512 128";
+            canSave = "0";
+            Visible = "1";
+            hovertime = "1000";
+            bitmap = "AAK:blank_image";
+            wrap = "0";
+         };
+         new GuiIdleCamFadeBitmapCtrl(creditsOverlayHUD) {
+            canSaveDynamicFields = "0";
+            Enabled = "1";
+            isContainer = "0";
+            Profile = "GuiDefaultProfile";
+            HorizSizing = "width";
+            VertSizing = "height";
+            position = "0 0";
+            Extent = "1680 1050";
+            MinExtent = "640 480";
+            canSave = "0";
+            Visible = "1";
+            hovertime = "1000";
+            bitmap = "AAK:credits_overlay100_image";
+           fadeInTime = "1000";
+           fadeOutTime = "1000";
+            wrap = "0";
+         };
+         new GuiIdleCamFadeBitmapCtrl(creditsTextHUD) {
+            canSaveDynamicFields = "0";
+            Enabled = "1";
+            isContainer = "0";
+            Profile = "GuiDefaultProfile";
+            HorizSizing = "center";
+            VertSizing = "center";
+            position = "209 161";
+            Extent = "605 445";
+            MinExtent = "605 445";
+            canSave = "0";
+            Visible = "1";
+            hovertime = "1000";
+            bitmap = "AAK:credits_text100_image";
+           fadeInTime = "1000";
+           fadeOutTime = "1000";
+            wrap = "0";
+         };
+         new GuiIdleCamFadeBitmapCtrl(creditsThxHUD) {
+            canSaveDynamicFields = "0";
+            Enabled = "1";
+            isContainer = "0";
+            Profile = "GuiDefaultProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "17 17";
+            Extent = "206 41";
+            MinExtent = "206 41";
+            canSave = "0";
+            Visible = "1";
+            hovertime = "1000";
+            bitmap = "AAK:credits_thx100_image";
+           fadeInTime = "1000";
+           fadeOutTime = "1000";
+            wrap = "0";
+         };  
+      };
+      
+      PlayGui.add(UbiqUI);
+   }
+}

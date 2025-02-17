@@ -9,6 +9,8 @@
 
 IMPLEMENT_CO_NETOBJECT_V1(CameraGoalTarget);
 
+IMPLEMENT_CALLBACK(CameraGoalTarget, targetLost, void, (), (), "");
+
 CameraGoalTarget::CameraGoalTarget()
 {
    mNetFlags.clear(Ghostable);
@@ -17,8 +19,8 @@ CameraGoalTarget::CameraGoalTarget()
    mPosition.set(0.0f, 0.0f, 0.0f);
    mRot.set(0.0f, 0.0f, 0.0f);
 
-   mPlayerObject = nullptr;
-   mTargetObject = nullptr;
+   mPlayerObject = NULL;
+   mTargetObject = NULL;
    mTargetPosition = Point3F::Zero;
 
    mPitch = 0;
@@ -53,8 +55,8 @@ void CameraGoalTarget::processTick(const Move*)
    Point3F playerPos = mPlayerObject->getNodePosition("Cam");
 
    Point3F targetPos = mTargetPosition;
-   if (mTargetObject)
-      targetPos = mTargetObject->getPosition();
+   if (mTargetObject.getPointer())
+      targetPos = mTargetObject->getPosition();      
 
    //First we need to get the center position that the camera 
    mCenterPosition.interpolate(playerPos, targetPos, mTargetOffsetDistance);
@@ -151,6 +153,11 @@ void CameraGoalTarget::onDeleteNotify(SimObject* obj)
    {
       mPlayerObject = NULL;
    }
+   else if (obj == (SimObject*)mTargetObject)
+   {
+      mTargetObject = NULL;
+      targetLost_callback();
+   }
 }
 
 U32 CameraGoalTarget::packUpdate(NetConnection* con, U32 mask, BitStream* stream)
@@ -171,7 +178,7 @@ U32 CameraGoalTarget::packUpdate(NetConnection* con, U32 mask, BitStream* stream
    {
       mathWrite(*stream, mTargetPosition);
 
-      if (stream->writeFlag(mTargetObject != nullptr))
+      if (stream->writeFlag(mTargetObject))
       {
          S32 id = con->getGhostIndex(mTargetObject);
          stream->write(id);

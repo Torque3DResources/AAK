@@ -1,0 +1,3 @@
+<ImageAsset
+    AssetName="path_cam_image"
+    imageFile="@assetFile=path_cam.png"/>

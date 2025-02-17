@@ -181,12 +181,14 @@ datablock TriggerData(ClimbTrigger)
 
 function ClimbTrigger::onEnterTrigger(%this,%trigger,%obj)
 {
+    if (!%obj.canClimb) return;
    //Parent::onEnterTrigger(%this,%trigger,%obj);
    %obj.climbTriggerCount++;
 }
 
 function ClimbTrigger::onLeaveTrigger(%this,%trigger,%obj)
 {
+    if (!%obj.canClimb) return;
    //Parent::onLeaveTrigger(%this,%trigger,%obj);
    %obj.climbTriggerCount--;
 }
@@ -244,6 +246,7 @@ function CameraTrigger_Player::onEnterTrigger(%this,%trigger,%obj)
 {
    //Parent::onEnterTrigger(%this,%trigger,%obj);
    %con = %obj.getControllingClient();
+   if (!%con) return;
    
    %currentGoal = %con.cameraGoalFollower.getGoalObject();
    if(%currentGoal == %con.cameraGoalPlayer)

@@ -1,0 +1,3 @@
+<ImageAsset
+    AssetName="jump_image"
+    imageFile="@assetFile=jump.png"/>

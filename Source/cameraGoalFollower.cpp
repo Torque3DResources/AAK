@@ -380,6 +380,12 @@ U32 CameraGoalFollower::packUpdate(NetConnection *conn, U32 mask, BitStream *str
 {
 	U32 retMask = Parent::packUpdate(conn, mask, stream);
 
+   if (stream->writeFlag(mask & ForceSetMask))
+   {
+      mathWrite(*stream, mPosition);
+      mathWrite(*stream, mRot);
+   }
+
 	if(!mGoalObject || !mPlayerObject)
 	{
 		stream->writeFlag(false);
@@ -420,6 +426,13 @@ void CameraGoalFollower::unpackUpdate(NetConnection *conn, BitStream *stream)
 {
 	Parent::unpackUpdate(conn, stream);
 
+   //ForceSet Mask
+   if (stream->readFlag())
+   {
+      mathRead(*stream, &mPosition);
+      mathRead(*stream, &mRot);
+   }
+
 	if( stream->readFlag() )
 	{
 		S32 ms;
@@ -442,6 +455,7 @@ void CameraGoalFollower::unpackUpdate(NetConnection *conn, BitStream *stream)
 		}
 	}
 
+   //Clear Mask
 	if( stream->readFlag() )
 	{
 		//clear history
@@ -459,6 +473,21 @@ void CameraGoalFollower::setPosition(const Point3F& pos, const Point3F& rot, Mat
 	mat->setColumn(3,pos);
 	mRot = rot;
 }
+
+void CameraGoalFollower::forceSetPosition(const Point3F& pos, const Point3F& rot)
+{
+   MatrixF xRot, zRot;
+   xRot.set(EulerF(rot.x, 0.0f, 0.0f));
+   zRot.set(EulerF(0.0f, 0.0f, rot.z));
+
+   MatrixF temp;
+   temp.mul(zRot, xRot);
+   temp.setColumn(3, pos);
+   Parent::setTransform(temp);
+   mRot = rot;
+   mPosition = pos;
+}
+
 
 void CameraGoalFollower::setTransform(const MatrixF& mat)
 {
@@ -581,4 +610,9 @@ DefineEngineMethod( CameraGoalFollower, setPlayerObject, bool, (AAKPlayer* playe
 	}
 
 	return object->setPlayerObject(playerObj);
+}
+
+DefineEngineMethod(CameraGoalFollower, forceSetPosition, void, (Point3F pos, Point3F rot), (Point3F::Zero, Point3F::Zero), "")
+{
+   object->forceSetPosition(pos, rot);
 }

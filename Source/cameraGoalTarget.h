@@ -48,7 +48,7 @@ private:
    AAKPlayer* mPlayerObject;
 
    Point3F mTargetPosition;
-   SceneObject* mTargetObject;
+   SimObjectPtr<SceneObject> mTargetObject;
 
    Point3F mCenterPosition;
    VectorF mCameraVector;
@@ -88,4 +88,5 @@ public:
    U32  packUpdate(NetConnection*, U32 mask, BitStream* stream);
    void unpackUpdate(NetConnection*, BitStream* stream);
    void onDeleteNotify(SimObject* obj);
+   DECLARE_CALLBACK(void, targetLost, ());
 };

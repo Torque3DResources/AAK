@@ -62,6 +62,17 @@ datablock ShapeBaseData(CameraGoalTargetDB)
 
 
 //-----------------------------------------------------------------------------
+datablock ShapeBaseData(CameraGoalExplicitDB)
+{
+   //shapeFile = "~/data/shapes/markers/octahedron.dts";    //use for debugging
+   observeThroughObject = true; //should always be true
+   
+   cameraMinFov = 10;
+   cameraDefaultFov = $pref::Player::DefaultFOV;
+   cameraMaxFov = 135;
+};
+
+//-----------------------------------------------------------------------------
 // Goal Camera
 //-----------------------------------------------------------------------------
 datablock CameraGoalFollowerData(CameraGoalFollowerDB)

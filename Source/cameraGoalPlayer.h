@@ -42,6 +42,8 @@ private:
 public:
 	F32 manualTransitionTime;	//transition time in/out of manual mode (ms)
 	F32 radiusDefault;			//default radius from player (world units)
+   F32 maxDynamicRadius;
+   bool useDynamicRadius;
 	F32 radiusManual;			//radius from player during manual mode (world units)
 	F32 offCenterY;				//screen-space Y (height) offset 
 	F32 offCenterX;				//screen-space X (width) offset
@@ -80,9 +82,10 @@ class CameraGoalPlayer: public ShapeBase
 
 	enum MaskBits {
 		MoveMask = Parent::NextFreeMask,
-		PlayerMask =   MoveMask << 1,
-		ModeMask =   MoveMask << 2,
-		NextFreeMask = ModeMask << 1
+		PlayerMask     = MoveMask << 1,
+		ModeMask       = MoveMask << 2,
+        LookAtMask     = MoveMask << 3,
+		NextFreeMask   = MoveMask << 4
 	};
 
 	struct StateDelta {
@@ -127,7 +130,10 @@ class CameraGoalPlayer: public ShapeBase
 
 	bool mAutoYaw;				//if true, camera will orbit automatically to a "good" view
 
-	
+	//LookAt
+    SceneObject* mLookAtObject;
+    Point3F mLookAtPosition;
+    bool mHasLookAt;
 
 	void setPosition(const Point3F& pos,const Point3F& viewRot);
 	void setRenderPosition(const Point3F& pos,const Point3F& viewRot);
@@ -185,6 +191,10 @@ public:
 	void clearForcedRadius(S32 ms);	//transition occurs, needs time
 
 	void setAutoYaw(bool on);
+
+   bool setLookAtObject(SceneObject* targetObj);
+   void setLookAtPosition(const Point3F& targetPos);
+   void clearLookAt();
 };
 
 #endif

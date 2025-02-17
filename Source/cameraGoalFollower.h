@@ -70,11 +70,12 @@ private:
 
 	CameraGoalFollowerData*   mDataBlock;
 
-	enum MaskBits {
-         UpdateMask = Parent::NextFreeMask,
-		 ClearMask = Parent::NextFreeMask << 1,
-         NextFreeMask = Parent::NextFreeMask << 2
-      };
+   enum MaskBits {
+      UpdateMask = Parent::NextFreeMask,
+      ClearMask = Parent::NextFreeMask << 1,
+      ForceSetMask = Parent::NextFreeMask << 2,
+      NextFreeMask = Parent::NextFreeMask << 3
+   };
 
 	struct StateDelta {
 		Point3F pos;
@@ -135,6 +136,8 @@ public:
 
 	bool setPlayerObject(AAKPlayer *obj);
 	AAKPlayer * getPlayerObject()      { return(mPlayerObject); }
+
+   void forceSetPosition(const Point3F& pos, const Point3F& rot);
 };
 
 #endif

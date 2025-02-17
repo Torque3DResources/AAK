@@ -1,0 +1,3 @@
+<ImageAsset
+    AssetName="welcome_image"
+    imageFile="@assetFile=welcome.png"/>
