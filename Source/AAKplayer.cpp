@@ -351,7 +351,7 @@ AAKPlayerData::AAKPlayerData()
    imageAnimPrefixFP = StringTable->EmptyString();
    for (U32 i=0; i<ShapeBase::MaxMountedImages; ++i)
    {
-      INIT_ASSET_ARRAY(ShapeFP, i);
+      mShapeFPAsset[i].registerRefreshNotify(this);
       mCRCFP[i] = 0;
       mValidShapeFP[i] = false;
    }
@@ -369,7 +369,7 @@ AAKPlayerData::AAKPlayerData()
 
    maxStepHeight = 1.0f;
    runSurfaceAngle = 80.0f;
-
+   runSurfaceCos = mCos(mDegToRad(runSurfaceAngle));
    fallingSpeedThreshold = -10.0f;
    vertDrag = 0.01f;
    vertDragFalling = 1.0f;
@@ -394,9 +394,13 @@ AAKPlayerData::AAKPlayerData()
    jumpEnergyDrain = 0.0f;
    minJumpEnergy = 0.0f;
    jumpSurfaceAngle = 78.0f;
+   jumpSurfaceCos = mCos(mDegToRad(jumpSurfaceAngle));
    jumpDelay = 30;
    minJumpSpeed = 500.0f;
    maxJumpSpeed = 2.0f * minJumpSpeed;
+
+   for (U32 i = 0; i < NumRecoilSequences; i++)
+      recoilSequence[i] = -1;
 
    // Sprinting
    sprintForce = 50.0f * 9.0f;
@@ -610,10 +614,10 @@ bool AAKPlayerData::preload(bool server, String &errorStr)
 
    // If we don't have a shape don't crash out trying to
    // setup animations and sequences.
-   if ( mShape )
+   if (getShape())
    {
       // Go ahead a pre-load the player shape
-      TSShapeInstance* si = new TSShapeInstance(mShape, false);
+      TSShapeInstance* si = new TSShapeInstance(getShape(), false);
       TSThread* thread = si->addThread();
 
       // Extract ground transform velocity from animations
@@ -624,7 +628,7 @@ bool AAKPlayerData::preload(bool server, String &errorStr)
          ActionAnimationDef *sp = &ActionAnimationList[i];
          dp->name          = sp->name;
          dp->dir.set(sp->dir.x,sp->dir.y,sp->dir.z);
-         dp->sequence      = mShape->findSequence(sp->name);
+         dp->sequence      = getShape()->findSequence(sp->name);
 
          // If this is a sprint action and is missing a sequence, attempt to use
          // the standard run ones.
@@ -632,7 +636,7 @@ bool AAKPlayerData::preload(bool server, String &errorStr)
          {
             S32 offset = i-SprintRootAnim;
             ActionAnimationDef *standDef = &ActionAnimationList[RootAnim+offset];
-            dp->sequence = mShape->findSequence(standDef->name);
+            dp->sequence = getShape()->findSequence(standDef->name);
          }
 
          dp->velocityScale = true;
@@ -644,12 +648,12 @@ bool AAKPlayerData::preload(bool server, String &errorStr)
          if (dStricmp(sp->name, "jet") != 0)
             AssertWarn(dp->sequence != -1, avar("AAKPlayerData::preload - Unable to find named animation sequence '%s'!", sp->name));
       }
-      for (S32 b = 0; b < mShape->sequences.size(); b++)
+      for (S32 b = 0; b < getShape()->sequences.size(); b++)
       {
          if (!isTableSequence(b))
          {
             dp->sequence      = b;
-            dp->name          = mShape->getName(mShape->sequences[b].nameIndex);
+            dp->name          = getShape()->getName(getShape()->sequences[b].nameIndex);
             dp->velocityScale = false;
             getGroundInfo(si,thread,dp++);
          }
@@ -666,17 +670,17 @@ bool AAKPlayerData::preload(bool server, String &errorStr)
             lookAction = c;
 
       // Resolve spine
-      spineNode[0] = mShape->findNode("Bip01 Pelvis");
-      spineNode[1] = mShape->findNode("Bip01 Spine");
-      spineNode[2] = mShape->findNode("Bip01 Spine1");
-      spineNode[3] = mShape->findNode("Bip01 Spine2");
-      spineNode[4] = mShape->findNode("Bip01 Neck");
-      spineNode[5] = mShape->findNode("Bip01 Head");
+      spineNode[0] = getShape()->findNode("Bip01 Pelvis");
+      spineNode[1] = getShape()->findNode("Bip01 Spine");
+      spineNode[2] = getShape()->findNode("Bip01 Spine1");
+      spineNode[3] = getShape()->findNode("Bip01 Spine2");
+      spineNode[4] = getShape()->findNode("Bip01 Neck");
+      spineNode[5] = getShape()->findNode("Bip01 Head");
 
       // Recoil animations
-      recoilSequence[0] = mShape->findSequence("light_recoil");
-      recoilSequence[1] = mShape->findSequence("medium_recoil");
-      recoilSequence[2] = mShape->findSequence("heavy_recoil");
+      recoilSequence[0] = getShape()->findSequence("light_recoil");
+      recoilSequence[1] = getShape()->findSequence("medium_recoil");
+      recoilSequence[2] = getShape()->findSequence("heavy_recoil");
    }
 
    // Convert pickupRadius to a delta of boundingBox
@@ -719,27 +723,26 @@ bool AAKPlayerData::preload(bool server, String &errorStr)
    {
       bool shapeError = false;
 
-      if (mShapeFPName[i] && mShapeFPName[i][0])
+      if (mShapeFPAsset[i].notNull())
       {
-         mShapeFP[i] = ResourceManager::get().load(mShapeFPName[i]);
-         if (bool(mShapeFP[i]) == false)
+         if (!getShapeFP(i))
          {
-            errorStr = String::ToString("AAKPlayerData: Couldn't load mounted image %d shape \"%s\"",i, mShapeFPName[i]);
+            errorStr = String::ToString("AAKPlayerData: Couldn't load mounted image %d shape \"%s\"",i, _getShapeFPAssetId(i));
             return false;
          }
 
-         if(!server && !mShapeFP[i]->preloadMaterialList(mShapeFP[i].getPath()) && NetConnection::filesWereDownloaded())
+         if (!server && !getShapeFP(i)->preloadMaterialList(getShapeFP(i).getPath()) && NetConnection::filesWereDownloaded())
             shapeError = true;
 
          if(computeCRC)
          {
-            Con::printf("Validation required for mounted image %d shape: %s", i, mShapeFPName[i]);
+            Con::printf("Validation required for mounted image %d shape: %s", i, _getShapeFPAssetId(i));
 
-            Torque::FS::FileNodeRef    fileRef = Torque::FS::GetFileNode(mShapeFP[i].getPath());
+            Torque::FS::FileNodeRef    fileRef = Torque::FS::GetFileNode(getShapeFP(i).getPath());
 
             if (!fileRef)
             {
-               errorStr = String::ToString("AAKPlayerData: Mounted image %d loading failed, shape \"%s\" is not found.",i,mShapeFP[i].getPath().getFullPath().c_str());
+               errorStr = String::ToString("AAKPlayerData: Mounted image %d loading failed, shape \"%s\" is not found.",i, getShapeFP(i).getPath().getFullPath().c_str());
                return false;
             }
 
@@ -747,7 +750,7 @@ bool AAKPlayerData::preload(bool server, String &errorStr)
                mCRCFP[i] = fileRef->getChecksum();
             else if(mCRCFP[i] != fileRef->getChecksum())
             {
-               errorStr = String::ToString("AAKPlayerData: Mounted image %d shape \"%s\" does not match version on server.",i,mShapeFPName[i]);
+               errorStr = String::ToString("AAKPlayerData: Mounted image %d shape \"%s\" does not match version on server.",i, _getShapeFPAssetId(i));
                return false;
             }
          }
@@ -1254,18 +1257,10 @@ void AAKPlayerData::initPersistFields()
 
       // Mounted images arrays
       addArray( "Mounted Images", ShapeBase::MaxMountedImages );
-
-      INITPERSISTFIELD_SHAPEASSET_ARRAY(ShapeFP, ShapeBase::MaxMountedImages, AAKPlayerData, "@brief File name of this player's shape that will be used in conjunction with the corresponding mounted image.\n\n"
+      INITPERSISTFIELD_SHAPEASSET_ARRAY_REFACTOR(ShapeFP, ShapeBase::MaxMountedImages, AAKPlayerData, "@brief File name of this player's shape that will be used in conjunction with the corresponding mounted image.\n\n"
          "These optional parameters correspond to each mounted image slot to indicate a shape that is rendered "
          "in addition to the mounted image shape.  Typically these are a player's arms (or arm) that is "
          "animated along with the mounted image's state animation sequences.\n");
-
-      addProtectedField("shapeNameFP", TypeShapeFilename, Offset(mShapeFPName, AAKPlayerData), &_setShapeFPData, &defaultProtectedGetFn, ShapeBase::MaxMountedImages,
-         "@brief File name of this player's shape that will be used in conjunction with the corresponding mounted image.\n\n"
-         "These optional parameters correspond to each mounted image slot to indicate a shape that is rendered "
-         "in addition to the mounted image shape.  Typically these are a player's arms (or arm) that is "
-         "animated along with the mounted image's state animation sequences.\n", AbstractClassRep::FIELD_HideInInspectors);
-
       endArray( "Mounted Images" );
 
    endGroup( "First Person Arms" );
@@ -1289,12 +1284,15 @@ void AAKPlayerData::initPersistFields()
    endGroup( "Third Person" );
 
    //Ubiq: TODO: put these into groups that make more sense & add documentation strings
-   addGroup( "Ubiq" );
+   addGroup( "AAK General" );
 
       addField("cameraOffset", TypePoint3F, Offset(cameraOffset, AAKPlayerData), "");
 
       addField("walkRunAnimVelocity", TypeF32, Offset(walkRunAnimVelocity, AAKPlayerData), "");
 
+   endGroup("AAK General");
+
+   addGroup("AAK Movement");
       addField("groundTurnRate", TypeF32, Offset(groundTurnRate, AAKPlayerData), "");
       addField("airTurnRate", TypeF32, Offset(airTurnRate, AAKPlayerData), "");
       //addField("maxAirTurn", TypeF32, Offset(maxAirTurn, AAKPlayerData), "");
@@ -1302,8 +1300,10 @@ void AAKPlayerData::initPersistFields()
       addField("groundFriction", TypeF32, Offset(groundFriction, AAKPlayerData), "");
 
       addField("jetTime", TypeF32, Offset(jetTime, AAKPlayerData), "");
+   endGroup("AAK Movement");
 
       //Ubiq: climbing
+   addGroup("AAK Climbing");
       addField("climbHeightMin", TypeF32, Offset(climbHeightMin, AAKPlayerData), "");
       addField("climbHeightMax", TypeF32, Offset(climbHeightMax, AAKPlayerData), "");
       addField("climbSpeedUp", TypeF32, Offset(climbSpeedUp, AAKPlayerData), "");
@@ -1311,8 +1311,10 @@ void AAKPlayerData::initPersistFields()
       addField("climbSpeedSide", TypeF32, Offset(climbSpeedSide, AAKPlayerData), "");
       addField("climbScrapeSpeed", TypeF32, Offset(climbScrapeSpeed, AAKPlayerData), "");
       addField("climbScrapeFriction", TypeF32, Offset(climbScrapeFriction, AAKPlayerData), "");
+   endGroup("AAK Climbing");
 
       //Ubiq: grabbing
+   addGroup("AAK Grabbing");
       addField("grabHeightMin", TypeF32, Offset(grabHeightMin, AAKPlayerData), "");
       addField("grabHeightMax", TypeF32, Offset(grabHeightMax, AAKPlayerData), "");
       addField("grabHeight", TypeF32, Offset(grabHeight, AAKPlayerData), "");
@@ -1321,26 +1323,33 @@ void AAKPlayerData::initPersistFields()
       addField("grabUpForwardOffset", TypeF32, Offset(grabUpForwardOffset, AAKPlayerData), "");
       addField("grabUpUpwardOffset", TypeF32, Offset(grabUpUpwardOffset, AAKPlayerData), "");
       addField("grabUpTestBox", TypePoint3F, Offset(grabUpTestBox, AAKPlayerData), "");
+   endGroup("AAK Grabbing");
 
       //Ubiq: Wall hug
+   addGroup("AAK Wall hug");
       addField("wallHugSpeed", TypeF32, Offset(wallHugSpeed, AAKPlayerData), "");
       addField("wallHugHeightMin", TypeF32, Offset(wallHugHeightMin, AAKPlayerData), "");
       addField("wallHugHeightMax", TypeF32, Offset(wallHugHeightMax, AAKPlayerData), "");	
+   endGroup("AAK Wall hug");
 
       //Ubiq: Stand jump
+   addGroup("AAK Stand jump");
       addField("runJumpCrouchDelay", TypeF32, Offset(runJumpCrouchDelay, AAKPlayerData), "");
       addField("standJumpCrouchDelay", TypeF32, Offset(standJumpCrouchDelay, AAKPlayerData), "");
+   endGroup("AAK Stand jump");
 
       //Ubiq: Ground Snap
+   addGroup("AAK Ground Snap");
       addField("groundSnapSpeed", TypeF32, Offset(groundSnapSpeed, AAKPlayerData), "");
       addField("groundSnapRayLength", TypeF32, Offset(groundSnapRayLength, AAKPlayerData), "");
       addField("groundSnapRayOffset", TypeF32, Offset(groundSnapRayOffset, AAKPlayerData), "");
+   endGroup("AAK Ground Snap");
 
       //Ubiq: Land state
+   addGroup("AAK Land State");
       addField("landDuration", TypeF32, Offset(landDuration, AAKPlayerData), "");
       addField("landSpeedFactor", TypeF32, Offset(landSpeedFactor, AAKPlayerData), "");
-
-   endGroup( "Ubiq" );
+   endGroup("AAK Land State" );
 
    Parent::initPersistFields();
 }
@@ -1515,14 +1524,13 @@ void AAKPlayerData::packData(BitStream* stream)
    stream->writeString(imageAnimPrefixFP);
    for (U32 i=0; i<ShapeBase::MaxMountedImages; ++i)
    {
-      PACKDATA_ASSET_ARRAY(ShapeFP, i);
-
       // computeCRC is handled in ShapeBaseData
       if (computeCRC)
       {
          stream->write(mCRCFP[i]);
       }
    }
+   PACKDATA_ASSET_ARRAY_REFACTOR(ShapeFP, ShapeBase::MaxMountedImages)
 	//Ubiq:
 	stream->write(cameraOffset.x);
 	stream->write(cameraOffset.y);
@@ -1752,14 +1760,13 @@ void AAKPlayerData::unpackData(BitStream* stream)
    imageAnimPrefixFP = stream->readSTString();
    for (U32 i=0; i<ShapeBase::MaxMountedImages; ++i)
    {
-      UNPACKDATA_ASSET_ARRAY(ShapeFP, i);
-
       // computeCRC is handled in ShapeBaseData
       if (computeCRC)
       {
          stream->read(&(mCRCFP[i]));
       }
    }
+   UNPACKDATA_ASSET_ARRAY_REFACTOR(ShapeFP, ShapeBase::MaxMountedImages)
 	//Ubiq:
 	stream->read(&cameraOffset.x);
 	stream->read(&cameraOffset.y);
@@ -2204,9 +2211,9 @@ bool AAKPlayer::onNewDataBlock( GameBaseData *dptr, bool reload )
    {
       for (U32 i=0; i<ShapeBase::MaxMountedImages; ++i)
       {
-         if (bool(mDataBlock->mShapeFP[i]))
+         if (bool(mDataBlock->getShapeFP(i)))
          {
-            mShapeFPInstance[i] = new TSShapeInstance(mDataBlock->mShapeFP[i], isClientObject());
+            mShapeFPInstance[i] = new TSShapeInstance(mDataBlock->getShapeFP(i), isClientObject());
 
             mShapeFPInstance[i]->cloneMaterialList();
 
@@ -3212,13 +3219,13 @@ void AAKPlayer::updateMove(const Move* move)
       findContact(&mRunSurface,&mJumpSurface,&mSlideSurface,&contactNormal);
    if (mJumpSurface)
       mJumpSurfaceNormal = contactNormal;
-	if (!mRunSurface)
+	if (!mClimbState.active && !mLedgeState.active)
       acc = VectorF(0.0f, 0.0f, mNetGravity / (1.0 - mBuoyancy) * TickSec);
    if (getParent() != NULL)
       acc = VectorF::Zero;
 
 	//Ubiq: Slide state
-	mSlideState.active = mSlideSurface && mVelocity.z < -1.0f;
+	mSlideState.active = mSlideSurface && mVelocity.z < mDataBlock->fallingSpeedThreshold;
 	if(mSlideState.active)
 	{
 		mContactTimer = 0;
@@ -4158,7 +4165,7 @@ void AAKPlayer::updateMove(const Move* move)
                if(con && !con->isFirstPerson())
                {
                   F32 yaw, pitch;
-                  MathUtils::getAnglesFromVector(moveVec, yaw, pitch);
+                  AAKUtils::getAnglesFromVector(moveVec, yaw, pitch);
                   mRot.z = yaw;
                }
             }
@@ -4271,10 +4278,14 @@ void AAKPlayer::updateMove(const Move* move)
    }
 
 	//apply ground friction
-	if(mRunSurface || mSlideSurface)
-	{
-		mVelocity -= mVelocity * mDataBlock->groundFriction * TickSec;
-	}
+   if (!contactNormal.isZero())
+   {
+      F32 curFriction = mDataBlock->groundFriction;
+      if (mSlideSurface)
+         curFriction *= mFabs(contactNormal.z);
+      mVelocity -= mVelocity * curFriction * TickSec;
+   }
+
    F32 vertDrag;
    if ((mFalling) && ((move->trigger[sJumpTrigger]) || (this->mIsAiControlled)))
       vertDrag = mDataBlock->vertDragFalling;
@@ -4615,9 +4626,10 @@ void AAKPlayer::updateAttachment() {
    MatrixF mat = getTransform();
    mat.getColumn(3, &pos);
    F32 height = mObjBox.getExtents().z + 0.1;
+   disableCollision();
    if (gServerContainer.castRay(Point3F(pos.x, pos.y, pos.z + height / 2),
       Point3F(pos.x, pos.y, pos.z - height/2),
-      PathShapeObjectType, &rInfo))
+      sCollisionMoveMask, &rInfo))
    {
       if (rInfo.object->getTypeMask() & PathShapeObjectType) //Ramen
       {
@@ -4647,6 +4659,7 @@ void AAKPlayer::updateAttachment() {
          attachToParent(NULL);
       }
    }
+   enableCollision();
 }
 //----------------------------------------------------------------------------
 
@@ -4859,9 +4872,9 @@ void AAKPlayer::setActionThread(U32 action, bool forward, bool hold, bool wait, 
 				transTime = 0.15f;
 
 			//Jump, ledge and climb actions need a faster blend to look right
-			if (mDataBlock && mDataBlock->isJumpAction(action)
+			if (mDataBlock && (mDataBlock->isJumpAction(action)
 				|| mDataBlock->isLedgeAction(action)
-				|| mDataBlock->isClimbAction(action))
+				|| mDataBlock->isClimbAction(action)))
 				transTime = 0.1f;
 
 			//Land animations need a super-fast blend to look right
@@ -5048,9 +5061,9 @@ void AAKPlayer::updateActionThread()
    if (mMountPending)
       mMountPending = (isMounted() ? 0 : (mMountPending - 1));
 
-   if (mActionAnimation.action == AAKPlayerData::NullAnimation ||
-       ((!mActionAnimation.waitForEnd || mActionAnimation.atEnd)) &&
-       !mActionAnimation.holdAtEnd && (mActionAnimation.delayTicks -= !mMountPending) <= 0)
+   if (mActionAnimation.action == AAKPlayerData::NullAnimation || !mActionAnimation.waitForEnd || //either no animation or not waiting till the end
+      ((mActionAnimation.atEnd && !mActionAnimation.holdAtEnd) && //or not holding that state and
+         (mActionAnimation.delayTicks -= mMountPending) <= 0)) //not waiting to mount
    {
       //The scripting language will get a call back when a script animation has finished...
       //  example: When the chat menu animations are done playing...
@@ -5859,12 +5872,16 @@ void AAKPlayer::updateAnimationTree(bool firstPerson)
    S32 mode = 0;
    if (firstPerson)
       if (mActionAnimation.firstPerson)
+      {
          mode = 0;
-//            TSShapeInstance::MaskNodeRotation;
-//            TSShapeInstance::MaskNodePosX |
-//            TSShapeInstance::MaskNodePosY;
+      }
       else
+      {
+         //            TSShapeInstance::MaskNodeRotation;
+         //            TSShapeInstance::MaskNodePosX |
+         //            TSShapeInstance::MaskNodePosY;
          mode = TSShapeInstance::MaskNodeAllButBlend;
+      }
 
    for (U32 i = 0; i < AAKPlayerData::NumSpineNodes; i++)
       if (mDataBlock->spineNode[i] != -1)
@@ -8826,6 +8843,12 @@ void AAKPlayer::prepRenderImage( SceneRenderState* state )
       state->getRenderPass()->addInst( ri );
    }
 
+   if(sRenderHelpers)
+   {
+      DebugDrawer::get()->drawBoxOutline(getWorldBox().minExtents, getWorldBox().maxExtents, LinearColorF::WHITE);
+      DebugDrawer::get()->setLastTTL(TickMs);
+   }
+
    GameConnection* connection = GameConnection::getConnectionToServer();
    if( connection && connection->getControlObject() == this && connection->isFirstPerson() )
    {
@@ -9032,8 +9055,8 @@ F32 AAKPlayer::getAnimationDurationByID(U32 anim_id)
    if (anim_id == BAD_ANIM_ID)
       return 0.0f;
    S32 seq_id = mDataBlock->actionList[anim_id].sequence;
-   if (seq_id >= 0 && seq_id < mDataBlock->mShape->sequences.size())
-      return mDataBlock->mShape->sequences[seq_id].duration;
+   if (seq_id >= 0 && seq_id < mDataBlock->getShape()->sequences.size())
+      return mDataBlock->getShape()->sequences[seq_id].duration;
 
    return 0.0f;
 }
@@ -9045,8 +9068,8 @@ bool AAKPlayer::isBlendAnimation(const char* name)
       return false;
 
    S32 seq_id = mDataBlock->actionList[anim_id].sequence;
-   if (seq_id >= 0 && seq_id < mDataBlock->mShape->sequences.size())
-      return mDataBlock->mShape->sequences[seq_id].isBlend();
+   if (seq_id >= 0 && seq_id < mDataBlock->getShape()->sequences.size())
+      return mDataBlock->getShape()->sequences[seq_id].isBlend();
 
    return false;
 }
@@ -9239,7 +9262,7 @@ Point3F AAKPlayer::getNodePosition(const char *nodeName)
 	const MatrixF& mat = this->getTransform();
 	Point3F nodePoint;
 	MatrixF nodeMat;
-	S32 ni = mDataBlock->mShape->findNode(nodeName);
+	S32 ni = mDataBlock->getShape()->findNode(nodeName);
 	AssertFatal(ni >= 0, "ShapeBase::getNodePosition() - couldn't find node!");
 	nodeMat = mShapeInstance->mNodeTransforms[ni];
 	nodePoint = nodeMat.getPosition();
@@ -9454,7 +9477,7 @@ void AAKPlayer::findClimbContact(bool* climb, PlaneF* climbPlane)
 #ifdef ENABLE_DEBUGDRAW
    if (sRenderHelpers)
    {
-      DebugDrawer::get()->drawBox(wBox.minExtents, wBox.maxExtents);
+      DebugDrawer::get()->drawBox(wBox.minExtents, wBox.maxExtents, LinearColorF::RED);
       DebugDrawer::get()->setLastTTL(100);
    }
 #endif
@@ -9618,7 +9641,7 @@ void AAKPlayer::findWallContact(bool* wall, PlaneF* wallPlane)
 #ifdef ENABLE_DEBUGDRAW
    if (sRenderHelpers)
    {
-      DebugDrawer::get()->drawBox(wBox.minExtents, wBox.maxExtents);
+      DebugDrawer::get()->drawBox(wBox.minExtents, wBox.maxExtents, LinearColorF::GREEN);
       DebugDrawer::get()->setLastTTL(TickMs);
    }
 #endif
@@ -9799,7 +9822,7 @@ void AAKPlayer::findLedgeContact(bool* ledge, VectorF* ledgeNormal, Point3F* led
 #ifdef ENABLE_DEBUGDRAW
    if (sRenderHelpers)
    {
-      DebugDrawer::get()->drawBox(wBox.minExtents, wBox.maxExtents);
+      DebugDrawer::get()->drawBox(wBox.minExtents, wBox.maxExtents, LinearColorF::BLUE);
       DebugDrawer::get()->setLastTTL(TickMs);
    }
 #endif

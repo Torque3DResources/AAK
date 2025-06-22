@@ -80,8 +80,7 @@ struct AAKPlayerData: public ShapeBaseData {
                                                                   ///  that we don't create a TSThread on the player if we don't
                                                                   ///  need to.
 
-   DECLARE_SHAPEASSET_ARRAY(AAKPlayerData, ShapeFP, ShapeBase::MaxMountedImages, onShapeChanged);    ///< Used to render with mounted images in first person [optional]
-   DECLARE_ASSET_ARRAY_SETGET(AAKPlayerData, ShapeFP);
+   DECLARE_SHAPEASSET_ARRAY_REFACTOR(PlayerData, ShapeFP, ShapeBase::MaxMountedImages)
    StringTableEntry  imageAnimPrefixFP;                           ///< Passed along to mounted images to modify
                                                                   ///  animation sequences played in first person. [optional]
    U32               mCRCFP[ShapeBase::MaxMountedImages];         ///< Computed CRC values for the first person mounted image shapes
@@ -252,12 +251,12 @@ struct AAKPlayerData: public ShapeBaseData {
       } dir;                  ///< Default direction
    };
    struct ActionAnimation {
-      const char* name;       ///< Sequence name
-      S32      sequence;      ///< Sequence index
-      VectorF  dir;           ///< Dir of animation ground transform
-      F32      speed;         ///< Speed in m/s
-      bool     velocityScale; ///< Scale animation by velocity
-      bool     death;         ///< Are we dying?
+      const char* name = "";           ///< Sequence name
+      S32      sequence = -1;          ///< Sequence index
+      VectorF  dir;                    ///< Dir of animation ground transform
+      F32      speed = 1.0;            ///< Speed in m/s
+      bool     velocityScale = true;   ///< Scale animation by velocity
+      bool     death = false;          ///< Are we dying?
    };
    enum {
       // *** WARNING ***
@@ -400,7 +399,7 @@ struct AAKPlayerData: public ShapeBaseData {
    //
    DECLARE_CONOBJECT(AAKPlayerData);
    AAKPlayerData();
-   bool preload(bool server, String &errorStr);
+   bool preload(bool server, String &errorStr) override;
    void getGroundInfo(TSShapeInstance*,TSThread*,ActionAnimation*);
    bool isTableSequence(S32 seq);
    bool isJumpAction(U32 action);
@@ -409,8 +408,8 @@ struct AAKPlayerData: public ShapeBaseData {
    bool isLandAction(U32 action);
 
    static void initPersistFields();
-   virtual void packData(BitStream* stream);
-   virtual void unpackData(BitStream* stream);
+   void packData(BitStream* stream) override;
+   void unpackData(BitStream* stream) override;
 
 
    //Ubiq:
@@ -477,6 +476,11 @@ struct AAKPlayerData: public ShapeBaseData {
    DECLARE_CALLBACK( void, onEnterMissionArea, ( AAKPlayer* obj ) );
    DECLARE_CALLBACK( void, onLeaveMissionArea, ( AAKPlayer* obj ) );
    /// @}
+   protected:
+      void onAssetRefreshed(AssetPtrBase* pAssetPtrBase) override
+      {
+            reloadOnLocalClient();
+      }
 };
 
 
@@ -516,7 +520,7 @@ protected:
    /// Client interpolation/warp data
    struct StateDelta {
       Move move;                    ///< Last move from server
-      F32 dt;                       ///< Last interpolation time
+      F32 dt = 0.0f;                ///< Last interpolation time
       /// @name Interpolation data
      /// @{
 
@@ -531,7 +535,7 @@ protected:
      /// @name Warp data
      /// @{
 
-      S32 warpTicks;
+      S32 warpTicks = 0;
       Point3F warpOffset;
       Point3F rotOffset;
      /// @}
@@ -689,7 +693,7 @@ protected:
    PhysicsPlayer* getPhysicsRep() const { return mPhysicsRep; }
 
   protected:
-   virtual void reSkin();
+   void reSkin() override;
 
    void setState(ActionState state, U32 ticks=0);
    void updateState();
@@ -726,9 +730,10 @@ protected:
    virtual void pickActionAnimation();
 
    /// @name Mounted objects
-   /// @{
+   /// @{ 
+   void onUnmount(SceneObject* obj, S32 node) override {};
    virtual void onUnmount( ShapeBase *obj, S32 node );
-   virtual void unmount();
+   void unmount() override;
    /// @}
 
    void setPosition(const Point3F& pos,const Point3F& viewRot);
@@ -740,19 +745,19 @@ protected:
    S32 findPrefixSequence(String* prefixPaths, const String& baseSeq);
    S32 convertActionToImagePrefix(U32 action);
 
-   virtual void onImage(U32 imageSlot, bool unmount);
-   virtual void onImageRecoil(U32 imageSlot,ShapeBaseImageData::StateData::RecoilState);
-   virtual void onImageStateAnimation(U32 imageSlot, const char* seqName, bool direction, bool scaleToState, F32 stateTimeOutValue);
-   virtual const char* getImageAnimPrefix(U32 imageSlot, S32 imageShapeIndex);
-   virtual void onImageAnimThreadChange(U32 imageSlot, S32 imageShapeIndex, ShapeBaseImageData::StateData* lastState, const char* anim, F32 pos, F32 timeScale, bool reset=false);
-   virtual void onImageAnimThreadUpdate(U32 imageSlot, S32 imageShapeIndex, F32 dt);
+   void onImage(U32 imageSlot, bool unmount) override;
+   void onImageRecoil(U32 imageSlot,ShapeBaseImageData::StateData::RecoilState) override;
+   void onImageStateAnimation(U32 imageSlot, const char* seqName, bool direction, bool scaleToState, F32 stateTimeOutValue) override;
+   const char* getImageAnimPrefix(U32 imageSlot, S32 imageShapeIndex) override;
+   void onImageAnimThreadChange(U32 imageSlot, S32 imageShapeIndex, ShapeBaseImageData::StateData* lastState, const char* anim, F32 pos, F32 timeScale, bool reset=false) override;
+   void onImageAnimThreadUpdate(U32 imageSlot, S32 imageShapeIndex, F32 dt) override;
 
-   virtual void updateDamageLevel();
-   virtual void updateDamageState();
+   void updateDamageLevel() override;
+   void updateDamageState() override;
    /// Set which client is controlling this player
-   void setControllingClient(GameConnection* client);
+   void setControllingClient(GameConnection* client) override;
 
-   void calcClassRenderData();
+   void calcClassRenderData() override;
    
    /// Play sound for foot contact.
    ///
@@ -794,23 +799,23 @@ public:
    /// @name Transforms
    /// @{
 
-   void setTransform(const MatrixF &mat);
-   void getEyeTransform(MatrixF* mat);
-   void getEyeBaseTransform(MatrixF* mat, bool includeBank);
-   void getRenderEyeTransform(MatrixF* mat);
-   void getRenderEyeBaseTransform(MatrixF* mat, bool includeBank);
-   void getCameraParameters(F32 *min, F32 *max, Point3F *offset, MatrixF *rot);
-   void getMuzzleTransform(U32 imageSlot,MatrixF* mat);
-   void getRenderMuzzleTransform(U32 imageSlot,MatrixF* mat);   
+   void setTransform(const MatrixF &mat) override;
+   void getEyeTransform(MatrixF* mat) override;
+   void getEyeBaseTransform(MatrixF* mat, bool includeBank) override;
+   void getRenderEyeTransform(MatrixF* mat) override;
+   void getRenderEyeBaseTransform(MatrixF* mat, bool includeBank) override;
+   void getCameraParameters(F32 *min, F32 *max, Point3F *offset, MatrixF *rot) override;
+   void getMuzzleTransform(U32 imageSlot,MatrixF* mat) override;
+   void getRenderMuzzleTransform(U32 imageSlot,MatrixF* mat) override;
 
-   virtual void getMuzzleVector(U32 imageSlot,VectorF* vec);
+   virtual void getMuzzleVector(U32 imageSlot,VectorF* vec) override;
    /// @}
 
    F32 getSpeed() const;
-   Point3F getVelocity() const;
-   void setVelocity(const VectorF& vel);
+   Point3F getVelocity() const override;
+   void setVelocity(const VectorF& vel) override;
    /// Apply an impulse at the given point, with magnitude/direction of vec
-   void applyImpulse(const Point3F& pos,const VectorF& vec);
+   void applyImpulse(const Point3F& pos,const VectorF& vec) override;
    /// Get the rotation of the player
    const Point3F& getRotation() { return mRot; }
    /// Get the rotation of the head of the player
@@ -836,19 +841,19 @@ public:
    void getMuzzlePointAI( U32 imageSlot, Point3F *point );
    F32 getMaxForwardVelocity() const { return (mDataBlock != NULL ? mDataBlock->maxForwardSpeed : 0); }
 
-   virtual bool    isDisplacable() const;
-   virtual Point3F getMomentum() const;
-   virtual void    setMomentum(const Point3F &momentum);
-   virtual bool    displaceObject(const Point3F& displaceVector);
+   bool    isDisplacable() const override;
+   Point3F getMomentum() const override;
+   void    setMomentum(const Point3F &momentum) override;
+   bool    displaceObject(const Point3F& displaceVector) override;
    virtual bool    getAIMove(Move*);
 
    bool checkDismountPosition(const MatrixF& oldPos, const MatrixF& newPos);  ///< Is it safe to dismount here?
 
    //
-   bool onAdd();
-   void onRemove();
-   bool onNewDataBlock( GameBaseData *dptr, bool reload );
-   void onScaleChanged();
+   bool onAdd() override;
+   void onRemove() override;
+   bool onNewDataBlock( GameBaseData *dptr, bool reload ) override;
+   void onScaleChanged() override;
    Box3F mScaledBox;
 
    // Animation
@@ -858,28 +863,28 @@ public:
    bool setArmThread(const char* sequence);
 
    // Object control
-   void setControlObject(ShapeBase *obj);
-   ShapeBase* getControlObject();
+   void setControlObject(ShapeBase *obj) override;
+   ShapeBase* getControlObject() override;
    
    //
    void updateWorkingCollisionSet();
-   virtual void processTick(const Move *move);
-   void interpolateTick(F32 delta);
-   void advanceTime(F32 dt);
-   bool castRay(const Point3F &start, const Point3F &end, RayInfo* info);
-   bool buildPolyList(PolyListContext context, AbstractPolyList* polyList, const Box3F &box, const SphereF &sphere);
-   void buildConvex(const Box3F& box, Convex* convex);
+   void processTick(const Move *move) override;
+   void interpolateTick(F32 delta) override;
+   void advanceTime(F32 dt) override;
+   bool castRay(const Point3F &start, const Point3F &end, RayInfo* info) override;
+   bool buildPolyList(PolyListContext context, AbstractPolyList* polyList, const Box3F &box, const SphereF &sphere) override;
+   void buildConvex(const Box3F& box, Convex* convex) override;
    bool isControlObject();
 
-   void onCameraScopeQuery(NetConnection *cr, CameraScopeQuery *);
-   void writePacketData(GameConnection *conn, BitStream *stream);
-   void readPacketData (GameConnection *conn, BitStream *stream);
-   U32  packUpdate  (NetConnection *conn, U32 mask, BitStream *stream);
-   void unpackUpdate(NetConnection *conn,           BitStream *stream);
+   void onCameraScopeQuery(NetConnection *cr, CameraScopeQuery *) override;
+   void writePacketData(GameConnection *conn, BitStream *stream) override;
+   void readPacketData (GameConnection *conn, BitStream *stream) override;
+   U32  packUpdate  (NetConnection *conn, U32 mask, BitStream *stream) override;
+   void unpackUpdate(NetConnection *conn,           BitStream *stream) override;
 
-   virtual void prepRenderImage( SceneRenderState* state );
+   void prepRenderImage( SceneRenderState* state ) override;
    virtual void renderConvex( ObjectRenderInst *ri, SceneRenderState *state, BaseMatInstance *overrideMat );   
-   virtual void renderMountedImage( U32 imageSlot, TSRenderState &rstate, SceneRenderState *state );
+   void renderMountedImage( U32 imageSlot, TSRenderState &rstate, SceneRenderState *state ) override;
 private:
    static void  afx_consoleInit();
    void         afx_init();
@@ -889,15 +894,15 @@ private:
    static bool  sCorpsesHiddenFromRayCast;
    
 public:
-   virtual void restoreAnimation(U32 tag);
-   virtual U32 getAnimationID(const char* name);
-   virtual U32 playAnimationByID(U32 anim_id, F32 pos, F32 rate, F32 trans, bool hold, bool wait, bool is_death_anim);
-   virtual F32 getAnimationDurationByID(U32 anim_id);
-   virtual bool isBlendAnimation(const char* name);
-   virtual const char* getLastClipName(U32 clip_tag);
-   virtual void unlockAnimation(U32 tag, bool force=false);
-   virtual U32 lockAnimation();
-   virtual bool isAnimationLocked() const { return ((anim_clip_flags & BLOCK_USER_CONTROL) != 0); }
+   void restoreAnimation(U32 tag) override;
+   U32 getAnimationID(const char* name) override;
+   U32 playAnimationByID(U32 anim_id, F32 pos, F32 rate, F32 trans, bool hold, bool wait, bool is_death_anim) override;
+   F32 getAnimationDurationByID(U32 anim_id) override;
+   bool isBlendAnimation(const char* name) override;
+   const char* getLastClipName(U32 clip_tag) override;
+   void unlockAnimation(U32 tag, bool force=false) override;
+   U32 lockAnimation() override;
+   bool isAnimationLocked() const  override { return ((anim_clip_flags & BLOCK_USER_CONTROL) != 0); }
    
 protected:
    bool         overrideLookAnimation;
@@ -1002,7 +1007,7 @@ public:
    //-------------------------------------------------------------------
    struct SlideState
    {
-	   bool active;
+	   bool active = false;
 	   Point3F surfaceNormal;
    }
    mSlideState;
@@ -1033,10 +1038,10 @@ public:
    //-------------------------------------------------------------------
    struct ClimbState
    {
-	   bool active;
+	   bool active = false;
 	   Point3F surfaceNormal;		//normal of surface we're currently on (which direction player should face)
-	   MoveDir direction;
-	   bool ignoreClimb;
+	   MoveDir direction = MOVE_DIR_NONE;
+	   bool ignoreClimb = false;
    } mClimbState;
    S32 mClimbTriggerCount;
 
@@ -1050,9 +1055,9 @@ public:
    //-------------------------------------------------------------------
    struct WallHugState
    {
-	   bool active;
+	   bool active = false;
 	   Point3F surfaceNormal;		//normal of surface we're currently on (which direction player should face)
-	   MoveDir direction;
+	   MoveDir direction = MOVE_DIR_NONE;
    } mWallHugState;
 
    void findWallContact(bool* wall, PlaneF* wallPlane);
@@ -1065,16 +1070,16 @@ public:
    //-------------------------------------------------------------------
    struct LedgeState
    {
-	   bool active;
+	   bool active = false;
 	   Point3F ledgeNormal;		//normal of ledge we're currently on (which direction player should face)
 	   Point3F ledgePoint;		//point on the ledge where player is grabbing
-	   MoveDir direction;
-	   bool ignoreLedge;
+	   MoveDir direction = MOVE_DIR_NONE;
+	   bool ignoreLedge = false;
 
-	   bool climbingUp;		//are we pulling ourselves up?
-	   F32 animPos;			//what pos are we at in the climb up animation? (0 - 1)
-	   F32 deltaAnimPos;		//for interpolation, the last pos in the climb up animation (0 - 1)
-	   F32 deltaAnimPosVec;	//for interpolation, how fast are we playing climb up animation?
+	   bool climbingUp = false;		//are we pulling ourselves up?
+	   F32 animPos = 0.0f;			//what pos are we at in the climb up animation? (0 - 1)
+	   F32 deltaAnimPos = 1.0f;		//for interpolation, the last pos in the climb up animation (0 - 1)
+	   F32 deltaAnimPosVec = 1.0f;	//for interpolation, how fast are we playing climb up animation?
    }
    mLedgeState;
    void findLedgeContact(bool* ledge, VectorF* ledgeNormal, Point3F* ledgePoint, bool* canMoveLeft, bool* canMoveRight);
