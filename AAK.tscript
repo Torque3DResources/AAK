@@ -22,6 +22,11 @@ function AAK::initServer(%this)
    
 	%this.queueExec("./scripts/shared/ActionAdventureGame");
 	%this.queueExec("./scripts/server/triggerCallbacks");
+	
+	if(isToolBuild())
+   {
+      %this.queueExec("./tools/debugging");
+   }
 }
 
 //This is called when the server is created for an actual game/map to be played

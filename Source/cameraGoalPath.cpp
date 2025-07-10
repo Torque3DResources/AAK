@@ -51,7 +51,7 @@ CameraGoalPath::CameraGoalPath()
 	mCameraPathIndex = SimPath::Path::NoPathIndex;
 	mPlayerObject = NULL;
 	mLookAtPlayer = false;
-    mMaxRange = -1.0f;
+   mMaxRange = -1.0f;
 	//choose our path manager (server/client)
 	if(isServerObject())
 		mPathManager = gServerPathManager;
@@ -332,7 +332,8 @@ bool CameraGoalPath::setCameraPathObject(SimPath::Path *obj, F32 maxRange)
 {
  	if(!obj)
 		return false;
-    mMaxRange = maxRange;
+
+   mMaxRange = maxRange;
 	mCameraPathIndex = obj->getPathIndex();
 	setMaskBits(CameraPathMask);
 	return true;

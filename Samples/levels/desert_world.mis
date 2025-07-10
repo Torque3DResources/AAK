@@ -2,10 +2,12 @@
 new Scene(Desrt_World) {
    isEditing = "1";
    gameModes = "ActionAdventureGame";
+      maxSize = "1";
+      MinSize = "0.1";
 
    new LevelInfo(theLevelInfo) {
       visibleDistance = "2000";
-      FogColor = "1 1 0.6 1";
+      FogColor = "1 1 0.6 0.8";
       FogDensity = "0.0007";
       canvasClearColor = "239 244 237 255";
       soundAmbience = "AudioAmbienceDefault";
@@ -13,6 +15,8 @@ new Scene(Desrt_World) {
          advancedLightmapSupport = "0";
          desc0 = "3D Action Adventure Kit Demo Level";
          LevelName = "3DAAK Demo";
+         maxSize = "1";
+         MinSize = "0.1";
    };
    new MissionArea(MissionAreaObject) {
       area = "16 8 2073 2031";
@@ -27,6 +31,7 @@ new Scene(Desrt_World) {
          dirtyGameObject = "0";
    };
    new SFXEmitter(atmosphere) {
+      SoundAsset = "AAK:desert_wind_soft";
       sourceGroup = "AudioChannelEffects";
       fadeInTime = "0";
       fadeOutTime = "0";
@@ -35,16 +40,22 @@ new Scene(Desrt_World) {
       scale = "100 100 100";
          dirtyGameObject = "0";
          fileName = "data/AAK/art/sound/desert/desert_wind_soft.ogg";
+         maxSize = "1";
+         MinSize = "0.1";
    };
    new ScatterSky() {
+      sunScale = "White";
       azimuth = "5";
       elevation = "55";
       brightness = "3";
       MoonMatAsset = "Core_Rendering:NoMaterial";
       useNightCubemap = "1";
       nightCubemap = "nightCubemap";
-      shadowDistance = "200";
-      fadeStartDistance = "120";
+      texSize = "2048";
+      overDarkFactor = "3000 1500 500 100";
+      shadowDistance = "500";
+      logWeight = "0.9";
+      fadeStartDistance = "400";
       position = "675.685 1498.93 523.755";
          dirtyGameObject = "0";
          maxSize = "1";
@@ -71,7 +82,7 @@ new Scene(Desrt_World) {
 
       new TSStatic() {
          ShapeAsset = "AAK:bridge_structure_start_foundation";
-         collisionLOD = "0";
+         collisionLOD = "-1444282368";
          collisionType = "Visible Mesh";
          decalType = "Visible Mesh";
          position = "458.13 1554.31 332.311";
@@ -79,7 +90,6 @@ new Scene(Desrt_World) {
       };
       new TSStatic() {
          ShapeAsset = "AAK:bridge_structure_final_gate_facade_leftRight";
-         collisionLOD = "0";
          collisionType = "Visible Mesh";
          decalType = "Visible Mesh";
          position = "499.313 1545.99 352.815";
@@ -95,7 +105,7 @@ new Scene(Desrt_World) {
       };
       new TSStatic(stairs_grand01) {
          ShapeAsset = "AAK:tutorial_structure_stairs_grand";
-         collisionLOD = "0";
+         collisionLOD = "1040908288";
          decalType = "Visible Mesh";
          position = "467.988 1578.26 336.744";
          rotation = "0 0 -1 90";
@@ -112,6 +122,7 @@ new Scene(Desrt_World) {
       };
       new TSStatic() {
          ShapeAsset = "AAK:bridge_structure_final_gate_facade_leftRight";
+         collisionLOD = "0";
          collisionType = "Visible Mesh";
          decalType = "Visible Mesh";
          position = "531.581 1532.94 352.77";
@@ -120,6 +131,7 @@ new Scene(Desrt_World) {
       };
       new TSStatic(stairs01) {
          ShapeAsset = "AAK:tutorial_structure_stairs06_twotier";
+         collisionLOD = "0";
          decalType = "Visible Mesh";
          position = "130.845 1539.27 329.12";
          rotation = "0 0 -1 90";
@@ -144,7 +156,6 @@ new Scene(Desrt_World) {
       };
       new TSStatic() {
          ShapeAsset = "AAK:bridge_structure_final_gate_facade_center";
-         collisionLOD = "0";
          collisionType = "Visible Mesh";
          decalType = "Visible Mesh";
          position = "532.334 1539.16 354.557";
@@ -152,7 +163,7 @@ new Scene(Desrt_World) {
       };
       new TSStatic() {
          ShapeAsset = "AAK:bridge_structure_final_gate_door";
-         collisionLOD = "0";
+         collisionLOD = "1060175872";
          collisionType = "Visible Mesh";
          decalType = "Visible Mesh";
          position = "527.507 1550.25 344.384";
@@ -204,7 +215,6 @@ new Scene(Desrt_World) {
       };
       new TSStatic() {
          ShapeAsset = "AAK:tutorial_structure_pillar_ornament";
-         collisionLOD = "0";
          collisionType = "Visible Mesh";
          decalType = "Visible Mesh";
          position = "555.995 1548.32 352.086";
@@ -710,6 +720,8 @@ new Scene(Desrt_World) {
          scale = "10 10 10";
             dirtyGameObject = "0";
             firstDataCheck = "1";
+            maxSize = "1";
+            MinSize = "0.1";
       };
       new ParticleEmitterNode() {
          emitter = "dust_cloud_emitter";
@@ -723,11 +735,35 @@ new Scene(Desrt_World) {
       new ParticleEmitterNode() {
          emitter = "dust_cloud_emitter";
          dataBlock = "dust_cloud_source";
+         position = "349.091 1818.44 267.885";
+         rotation = "0 0 -1 43.5448";
+         scale = "10 10 10";
+            dirtyGameObject = "0";
+            firstDataCheck = "1";
+            maxSize = "1";
+            MinSize = "0.1";
+      };
+      new ParticleEmitterNode() {
+         emitter = "dust_cloud_emitter";
+         dataBlock = "dust_cloud_source";
+         position = "390.844 1758.67 267.885";
+         rotation = "0 0 -1 43.5448";
+         scale = "10 10 10";
+            dirtyGameObject = "0";
+            firstDataCheck = "1";
+            maxSize = "1";
+            MinSize = "0.1";
+      };
+      new ParticleEmitterNode() {
+         emitter = "dust_cloud_emitter";
+         dataBlock = "dust_cloud_source";
          position = "282.317 1755.05 312.164";
          rotation = "0 0 -1 43.5448";
          scale = "10 10 10";
             dirtyGameObject = "0";
             firstDataCheck = "1";
+            maxSize = "1";
+            MinSize = "0.1";
       };
    };
    new SimGroup(checkpoints) {
@@ -758,6 +794,7 @@ new Scene(Desrt_World) {
          rotation = "0 0 -1 34.3775";
          scale = "17 3 3";
             dirtyGameObject = "0";
+            disabled = "1";
             firstDataCheck = "1";
       };
       new Trigger(checkpoint_tunnel) {
@@ -814,6 +851,7 @@ new Scene(Desrt_World) {
       };
       new TSStatic() {
          ShapeAsset = "AAK:tutorial_structure_pillar_walkway";
+         collisionLOD = "0";
          collisionType = "Visible Mesh";
          decalType = "Visible Mesh";
          position = "227.458 1690.11 301.773";
@@ -922,6 +960,7 @@ new Scene(Desrt_World) {
 
       new TSStatic() {
          ShapeAsset = "AAK:tutorial_structure_pillar_ornament";
+         collisionLOD = "0";
          collisionType = "Visible Mesh";
          decalType = "Visible Mesh";
          position = "70.2283 1224.98 327.255";
@@ -1497,7 +1536,11 @@ new Scene(Desrt_World) {
    };
    new SimGroup(camera_triggers) {
 
-      new Trigger(checkpoint_before_tunnel_cam) {
+      new CameraTrigger(checkpoint_before_tunnel_cam) {
+         Time = "1";
+         ForcedPitch = "0.4";
+         ForcedRadius = "10";
+         ForcedYaw = "0.98";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "283.168 1758.37 288.779";
@@ -1505,36 +1548,33 @@ new Scene(Desrt_World) {
          scale = "17 3 3";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = "0.4";
-            ForcedRadius = "10";
-            ForcedYaw = "0.98";
-            Time = "1";
       };
-      new Trigger(checkpoint_pillar_jump_cam) {
+      new CameraTrigger(checkpoint_pillar_jump_cam) {
+         Time = "1";
+         ForcedPitch = "0.4";
+         ForcedRadius = "10";
+         ForcedYaw = "4.71";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "327.924 1541.9 325.835";
          scale = "4.1 5.6 0.0999999";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".4";
-            ForcedRadius = "10";
-            ForcedYaw = "4.71";
-            Time = "1";
       };
-      new Trigger(checkpoint_platform_cam) {
+      new CameraTrigger(checkpoint_platform_cam) {
+         Time = "1";
+         ForcedPitch = "0.4";
+         ForcedRadius = "10";
+         ForcedYaw = "3.1415";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "214.128 1520.75 315.426";
          scale = "4.1 5.6 0.6";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".4";
-            ForcedRadius = "10";
-            ForcedYaw = "3.1415";
-            Time = "1";
       };
-      new Trigger(checkpoint_bridge_start_cam) {
+      new CameraTrigger(checkpoint_bridge_start_cam) {
+         Time = "1";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Path";
          position = "172.168 1542.13 325.446";
@@ -1544,20 +1584,21 @@ new Scene(Desrt_World) {
             firstDataCheck = "1";
             lookAtPlayer = "0";
             playerPath = "bridge_player_path";
-            Time = "1";
       };
-      new Trigger(player_cam_reset_before_ledgegrab) {
+      new CameraTrigger(player_cam_reset_before_ledgegrab) {
+         Time = "1000";
+         ForcedPitch = "0.4";
+         ForcedRadius = "7";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "231.687 1531.04 324.423";
          scale = "7.95732 0.42 3.67";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".4";
-            ForcedRadius = "7";
-            Time = "1000";
       };
-      new Trigger(player_trig_ledge_grab_tunnel) {
+      new CameraTrigger(player_trig_ledge_grab_tunnel) {
+         Time = "3000";
+         ForcedPitch = "0.8";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "295.697 1749.64 312.085";
@@ -1565,10 +1606,12 @@ new Scene(Desrt_World) {
          scale = "0.510002 14.66 0.4";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".8";
-            Time = "3000";
       };
-      new Trigger(player_trig_return_to_yaw) {
+      new CameraTrigger(player_trig_return_to_yaw) {
+         Time = "3000";
+         ForcedPitch = "0.4";
+         ForcedRadius = "10";
+         ForcedYaw = "0.98";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "303.088 1731.02 301.443";
@@ -1576,21 +1619,21 @@ new Scene(Desrt_World) {
          scale = "8.94 24.16 1.91";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".4";
-            ForcedRadius = "10";
-            ForcedYaw = ".98";
-            Time = "3000";
       };
-      new Trigger(player_trig_return_to_no_force) {
+      new CameraTrigger(player_trig_return_to_no_force) {
+         Time = "3000";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "355.017 1542.46 325.834";
          scale = "36.51 6.37423 5.25";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            Time = "3000";
       };
-      new Trigger(player_trig_bridge_climb_finish) {
+      new CameraTrigger(player_trig_bridge_climb_finish) {
+         Time = "2500";
+         ForcedPitch = "0.4";
+         ForcedRadius = "10";
+         ForcedYaw = "4.71";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "293.598 1535.17 323.065";
@@ -1598,47 +1641,44 @@ new Scene(Desrt_World) {
          scale = "31.37 0.249999 4.98";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".4";
-            ForcedRadius = "10";
-            ForcedYaw = "4.71";
-            Time = "2500";
       };
-      new Trigger(player_trig_bridge_climb) {
+      new CameraTrigger(player_trig_bridge_climb) {
+         Time = "2000";
+         ForcedPitch = "0.2";
+         ForcedRadius = "10";
+         ForcedYaw = "4.58";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "286.428 1529.02 320.654";
          scale = "1.53 3.3 2.62";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".2";
-            ForcedRadius = "10";
-            ForcedYaw = "4.58";
-            Time = "2000";
       };
-      new Trigger(player_trig_bridge_climb_finish2) {
+      new CameraTrigger(player_trig_bridge_climb_finish2) {
+         Time = "2000";
+         ForcedPitch = "0.6";
+         ForcedRadius = "10";
+         ForcedYaw = "4.71";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "283.585 1537.49 314.879";
          scale = "4.27 12.52 4.98";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".6";
-            ForcedRadius = "10";
-            ForcedYaw = "4.71";
-            Time = "2000";
       };
-      new Trigger(player_trig_bridge_climb2) {
+      new CameraTrigger(player_trig_bridge_climb2) {
+         Time = "1000";
+         ForcedPitch = "0.6";
+         ForcedRadius = "8";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "283.585 1540.28 309.261";
          scale = "0.26 1.73 3.92";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".6";
-            ForcedRadius = "8";
-            Time = "1000";
       };
-      new Trigger(player_trig_platform1) {
+      new CameraTrigger(player_trig_platform1) {
+         Time = "3000";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Path";
          position = "230.725 1512.36 319.189";
@@ -1648,9 +1688,12 @@ new Scene(Desrt_World) {
             firstDataCheck = "1";
             lookAtPlayer = "0";
             playerPath = "bridge_player_path";
-            Time = "3000";
       };
-      new Trigger(player_trig_climb) {
+      new CameraTrigger(player_trig_climb) {
+         Time = "2500";
+         ForcedPitch = "0.5";
+         ForcedRadius = "10";
+         ForcedYaw = "2.5";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "288.593 1720.72 309.514";
@@ -1658,12 +1701,9 @@ new Scene(Desrt_World) {
          scale = "17.82 6.79 0.432189";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".5";
-            ForcedRadius = "10";
-            ForcedYaw = "2.5";
-            Time = "2500";
       };
-      new Trigger(player_trig_ledge_grab_tunnel2) {
+      new CameraTrigger(player_trig_ledge_grab_tunnel2) {
+         Time = "3000";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "277.067 1736.34 312.085";
@@ -1671,9 +1711,12 @@ new Scene(Desrt_World) {
          scale = "22.41 17.53 0.4";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            Time = "3000";
       };
-      new Trigger(player_trig_climb_pitch_up) {
+      new CameraTrigger(player_trig_climb_pitch_up) {
+         Time = "1000";
+         ForcedPitch = "0.1";
+         ForcedRadius = "10";
+         ForcedYaw = "0.98";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "306.569 1726.15 303.663";
@@ -1681,12 +1724,12 @@ new Scene(Desrt_World) {
          scale = "6.81 12.85 0.73";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".1";
-            ForcedRadius = "10";
-            ForcedYaw = ".98";
-            Time = "1000";
       };
-      new Trigger(player_trig_return_to_yaw2) {
+      new CameraTrigger(player_trig_return_to_yaw2) {
+         Time = "10000";
+         ForcedPitch = "0.4";
+         ForcedRadius = "10";
+         ForcedYaw = "0.98";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "276.263 1738.22 300.54";
@@ -1694,12 +1737,12 @@ new Scene(Desrt_World) {
          scale = "22.25 22.55 0.4";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".4";
-            ForcedRadius = "10";
-            ForcedYaw = ".98";
-            Time = "10000";
       };
-      new Trigger(player_trig_climb2f) {
+      new CameraTrigger(player_trig_climb2f) {
+         Time = "3000";
+         ForcedPitch = "0.4";
+         ForcedRadius = "10";
+         ForcedYaw = "2.5";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "294.169 1713.92 309.564";
@@ -1707,12 +1750,12 @@ new Scene(Desrt_World) {
          scale = "17.02 11.15 0.22";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".4";
-            ForcedRadius = "10";
-            ForcedYaw = "2.5";
-            Time = "3000";
       };
-      new Trigger(player_trig_balcony_zoom_out) {
+      new CameraTrigger(player_trig_balcony_zoom_out) {
+         Time = "3000";
+         ForcedPitch = "0.4";
+         ForcedRadius = "17";
+         ForcedYaw = "0.98";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "326.02 1721.44 273.903";
@@ -1720,12 +1763,12 @@ new Scene(Desrt_World) {
          scale = "3.35 16.9 8.55";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".4";
-            ForcedRadius = "17";
-            ForcedYaw = ".98";
-            Time = "3000";
       };
-      new Trigger(player_trig_balcony_zoom_in) {
+      new CameraTrigger(player_trig_balcony_zoom_in) {
+         Time = "2000";
+         ForcedPitch = "0.4";
+         ForcedRadius = "10";
+         ForcedYaw = "0.98";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "327.81 1725.65 270.773";
@@ -1733,12 +1776,12 @@ new Scene(Desrt_World) {
          scale = "17.22 22.67 10.78";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".4";
-            ForcedRadius = "10";
-            ForcedYaw = ".98";
-            Time = "2000";
       };
-      new Trigger(player_trig_dismount_ledge_grab) {
+      new CameraTrigger(player_trig_dismount_ledge_grab) {
+         Time = "2000";
+         ForcedPitch = "0.4";
+         ForcedRadius = "10";
+         ForcedYaw = "0.98";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "325.932 1745.78 270.514";
@@ -1746,12 +1789,9 @@ new Scene(Desrt_World) {
          scale = "6.69 2.66 0.4";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".4";
-            ForcedRadius = "10";
-            ForcedYaw = ".98";
-            Time = "2000";
       };
-      new Trigger(player_trig_ledge_grab) {
+      new CameraTrigger(player_trig_ledge_grab) {
+         Time = "1000";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "323.272 1749.18 273.143";
@@ -1759,9 +1799,12 @@ new Scene(Desrt_World) {
          scale = "3.82 4.8 0.4";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            Time = "1000";
       };
-      new Trigger(player_trig_under_ledgegrab) {
+      new CameraTrigger(player_trig_under_ledgegrab) {
+         Time = "3000";
+         ForcedPitch = "0.4";
+         ForcedRadius = "10";
+         ForcedYaw = "0.98";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "321.992 1751.3 266.838";
@@ -1769,12 +1812,13 @@ new Scene(Desrt_World) {
          scale = "6.69 7.17 0.4";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".4";
-            ForcedRadius = "10";
-            ForcedYaw = ".98";
-            Time = "3000";
       };
-      new Trigger(player_trig_1st) {
+      new CameraTrigger(player_trig_1st) {
+         Time = "3000";
+         ForcedPitch = "18.534";
+         ForcedRadius = "7";
+         ForcedYaw = "413.063";
+         link = "lockedPlayerViewBookmark";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "335.218 1795.65 252.317";
@@ -1782,12 +1826,11 @@ new Scene(Desrt_World) {
          scale = "4.19 47.84 4.1";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".4";
-            ForcedRadius = "10";
-            ForcedYaw = ".98";
-            Time = "3000";
+            maxSize = "1";
+            MinSize = "0.1";
       };
-      new Trigger(player_trig_ledge_grab_tunnel3) {
+      new CameraTrigger(player_trig_ledge_grab_tunnel3) {
+         Time = "3000";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "277.515 1736.66 306.835";
@@ -1795,9 +1838,8 @@ new Scene(Desrt_World) {
          scale = "23.21 16.29 0.4";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            Time = "3000";
       };
-      new Trigger(checkpoint_tunnel_cam) {
+      new CameraTrigger(checkpoint_tunnel_cam) {
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "292.596 1743.03 306.226";
@@ -1806,78 +1848,80 @@ new Scene(Desrt_World) {
             dirtyGameObject = "0";
             firstDataCheck = "1";
       };
-      new Trigger(bridge_ledge_pitch) {
+      new CameraTrigger(bridge_ledge_pitch) {
+         Time = "4000";
+         ForcedPitch = "0.8";
+         ForcedRadius = "10";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "239.084 1529.77 325.208";
          scale = "0.697321 4.79 0.5";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".8";
-            ForcedRadius = "10";
-            Time = "4000";
       };
-      new Trigger(bridge_ledge_pitch2) {
+      new CameraTrigger(bridge_ledge_pitch2) {
+         ForcedPitch = "0.4";
+         ForcedRadius = "7";
+         ForcedYaw = "3.1415";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "202.888 1541.37 309.693";
          scale = "10 7.72 3.79";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".4";
-            ForcedRadius = "7";
-            ForcedYaw = "3.1415";
-            Time = "1500";
       };
-      new Trigger(bridge_ledge_pitch3) {
+      new CameraTrigger(bridge_ledge_pitch3) {
+         Time = "2000";
+         ForcedPitch = "0.9";
+         ForcedRadius = "10";
+         ForcedYaw = "3.1415";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "220.828 1524.74 315.661";
          scale = "7.28732 0.700001 3.79";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".9";
-            ForcedRadius = "10";
-            ForcedYaw = "3.1415";
-            Time = "2000";
       };
-      new Trigger(bridge_ledge_pitch4) {
+      new CameraTrigger(bridge_ledge_pitch4) {
+         Time = "3000";
+         ForcedPitch = "0.4";
+         ForcedRadius = "10";
+         ForcedYaw = "3.1415";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "205.83 1521.77 315.661";
          scale = "7.28732 0.700001 3.79";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".4";
-            ForcedRadius = "10";
-            ForcedYaw = "3.1415";
-            Time = "3000";
       };
-      new Trigger(bridge_ledge_pitch5) {
+      new CameraTrigger(bridge_ledge_pitch5) {
+         Time = "1000";
+         ForcedPitch = "0.4";
+         ForcedRadius = "10";
+         ForcedYaw = "3.1415";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "231.927 1524.03 318.711";
          scale = "7.28732 6.35 0.860001";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".4";
-            ForcedRadius = "10";
-            ForcedYaw = "3.1415";
-            Time = "1000";
       };
-      new Trigger(bridge_ledge_pitch6) {
+      new CameraTrigger(bridge_ledge_pitch6) {
+         Time = "1200";
+         ForcedPitch = "0.9";
+         ForcedRadius = "10";
+         ForcedYaw = "3.1415";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "206.04 1524.36 315.661";
          scale = "7.28732 0.700001 3.79";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".9";
-            ForcedRadius = "10";
-            ForcedYaw = "3.1415";
-            Time = "1200";
       };
-      new Trigger(player_trig_return_to_no_force3) {
+      new CameraTrigger(player_trig_return_to_no_force3) {
+         Time = "4000";
+         ForcedPitch = "0.6";
+         ForcedRadius = "10";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "209.232 1536.19 331.417";
@@ -1885,21 +1929,18 @@ new Scene(Desrt_World) {
          scale = "6.27732 0.18 3.67";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".6";
-            ForcedRadius = "10";
-            ForcedYaw = "0";
-            Time = "4000";
       };
-      new Trigger(player_trig_return_to_no_force4) {
+      new CameraTrigger(player_trig_return_to_no_force4) {
+         Time = "3000";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "388.262 1546.2 325.834";
          scale = "3.39 13.5542 5.25";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            Time = "3000";
       };
-      new Trigger(cam_reset) {
+      new CameraTrigger(cam_reset) {
+         Time = "2000";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "395.092 1565.2 305.921";
@@ -1907,9 +1948,9 @@ new Scene(Desrt_World) {
          scale = "60 254.36 3";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            Time = "2000";
       };
-      new Trigger(cam_reset2) {
+      new CameraTrigger(cam_reset2) {
+         Time = "3000";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "150.485 1558.94 327.016";
@@ -1917,9 +1958,9 @@ new Scene(Desrt_World) {
          scale = "38.57 25.94 7.8";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            Time = "3000";
       };
-      new Trigger(cam_reset5) {
+      new CameraTrigger(cam_reset5) {
+         Time = "3000";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "323.123 1820.89 251.087";
@@ -1927,9 +1968,9 @@ new Scene(Desrt_World) {
          scale = "20.57 3.58 4.17";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            Time = "3000";
       };
-      new Trigger(cam_reset6) {
+      new CameraTrigger(cam_reset6) {
+         Time = "3000";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "384.46 1734.24 251.087";
@@ -1937,9 +1978,9 @@ new Scene(Desrt_World) {
          scale = "107.45 3.58 4.17";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            Time = "3000";
       };
-      new Trigger(cam_reset7) {
+      new CameraTrigger(cam_reset7) {
+         Time = "3000";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "292.709 1672.94 251.087";
@@ -1947,33 +1988,32 @@ new Scene(Desrt_World) {
          scale = "110 14.91 1";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            Time = "3000";
       };
-      new Trigger(bridge_ledge_pitch7) {
+      new CameraTrigger(bridge_ledge_pitch7) {
+         Time = "3000";
+         ForcedPitch = "0.4";
+         ForcedRadius = "10";
+         ForcedYaw = "3.1415";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "220.618 1522.15 315.661";
          scale = "7.28732 0.700001 3.79";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".4";
-            ForcedRadius = "10";
-            ForcedYaw = "3.1415";
-            Time = "3000";
       };
-      new Trigger(bridge_lower_level_return) {
+      new CameraTrigger(bridge_lower_level_return) {
+         ForcedPitch = "0.4";
+         ForcedRadius = "7";
+         ForcedYaw = "3.1415";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Player";
          position = "275.158 1541.4 309.693";
          scale = "5.44 3.76 3.79";
             dirtyGameObject = "0";
             firstDataCheck = "1";
-            ForcedPitch = ".4";
-            ForcedRadius = "7";
-            ForcedYaw = "3.1415";
-            Time = "1500";
       };
-      new Trigger(bridge_camera_trig2) {
+      new CameraTrigger(bridge_camera_trig2) {
+         Time = "3000";
          polyhedron = "0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 -1.0000000 0.0000000 0.0000000 0.0000000 1.0000000";
          dataBlock = "CameraTrigger_Path";
          position = "154.75 1550.36 326.37";
@@ -1983,7 +2023,6 @@ new Scene(Desrt_World) {
             firstDataCheck = "1";
             lookAtPlayer = "0";
             playerPath = "bridge_player_path";
-            Time = "3000";
       };
    };
    new SimGroup(kill_triggers) {
@@ -2571,7 +2610,7 @@ new Scene(Desrt_World) {
       new Marker(bcp3) {
          seqNum = "2";
          position = "182.5 1539.39 330.905";
-         rotation = "0.257721 -0.25772 0.931214 94.0783";
+         rotation = "0.257721 -0.25772 0.931214 94.0777";
             dirtyGameObject = "0";
       };
       new Marker(bcp4) {
@@ -3255,6 +3294,49 @@ new Scene(Desrt_World) {
          maxSize = "1";
          messageType = "welcome";
          MinSize = "0.1";
+   };
+   new VolumetricFog() {
+      position = "464.783 1567.41 148.823";
+      rotation = "0 0 -1 60";
+      scale = "308.52 224.039 32.6816";
+      ShapeAsset = "Core_Rendering:Fog_Cube";
+      FogColor = "255 251 196 255";
+      FogDensity = "0.005";
+         maxSize = "1";
+   };
+   new ParticleEmitterNode() {
+      emitter = "dust_cloud_emitter";
+      dataBlock = "dust_cloud_source";
+      position = "314.541 1704.45 319.281";
+      rotation = "0 0 -1 43.5448";
+      scale = "10 10 10";
+         dirtyGameObject = "0";
+         firstDataCheck = "1";
+         maxSize = "1";
+         MinSize = "0.1";
+   };
+   new ParticleEmitterNode() {
+      emitter = "dust_cloud_emitter";
+      dataBlock = "dust_cloud_source";
+      position = "366.109 1719.1 244.706";
+      rotation = "0 0 -1 43.5448";
+      scale = "10 10 10";
+         dirtyGameObject = "0";
+         firstDataCheck = "1";
+         maxSize = "1";
+         MinSize = "0.1";
+   };
+   new SimGroup(CameraBookmarks) {
+
+      new CameraBookmark(lockedPlayerViewBookmark) {
+         dataBlock = "CameraBookmarkMarker";
+         position = "353.196 1779.32 257.117";
+         rotation = "-0.0801426 -0.160517 0.983774 232.318";
+         internalName = "NewCamera_0";
+            firstDataCheck = "1";
+            maxSize = "1";
+            MinSize = "0.1";
+      };
    };
 };
 //--- OBJECT WRITE END ---

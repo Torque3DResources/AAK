@@ -138,7 +138,7 @@ datablock ParticleData(LightPuff)
    useInvAlpha          = true;
    spinRandomMin        = -35.0;
    spinRandomMax        = 35.0;
-   textureAsset   = "AAK:footpuff_image";
+   textureAsset   = "AAK:footpuff";
    colors[0]     = "1.0 1.0 1.0 1.0";
    colors[1]     = "1.0 1.0 1.0 0.0";
    sizes[0]      = 0.1;
@@ -167,8 +167,8 @@ datablock ParticleEmitterData(LightPuffEmitter)
 //----------------------------------------------------------------------------
 datablock DecalData(PlayerFootprint)
 {
-   Material = "DECAL_PlayerFootprint";
-   size = "0.5";
+   Material = "PlayerFootprintMat";
+   size = "0.3";
    lifeSpan = "50000";
 };
 
@@ -264,7 +264,7 @@ datablock AAKPlayerData(AAKDefaultPlayerData)
    maxUnderwaterSideSpeed = 2.0;
 
    //jump
-   jumpForce = 424;
+   jumpForce = 180;
    jumpEnergyDrain = 0;
    minJumpEnergy = 0;
    jumpDelay = 5;          //how long after landing before player can jump again (ticks), keep this low
@@ -272,7 +272,7 @@ datablock AAKPlayerData(AAKDefaultPlayerData)
    standJumpCrouchDelay = 384;   //how long to delay a stand-jump while the crouch portion of the animation plays (ms)
    runJumpCrouchDelay = 160;     //how long to delay a run-jump while the crouch portion of the animation plays (ms)
 
-   fallingSpeedThreshold = -7;     //if the players velocity is less than this, he is considered falling (plays fall animation)   landSequenceTime = 0.33;
+   fallingSpeedThreshold = -4;     //if the players velocity is less than this, he is considered falling (plays fall animation)   landSequenceTime = 0.33;
 
    //landSequenceTime = 0;   //Ubiq: removing these - we use our own landing system
    //transitionToLand = false;
@@ -314,7 +314,7 @@ datablock AAKPlayerData(AAKDefaultPlayerData)
 	
    
    //jet jump
-   jetTime = 320;       //how long after jumping the jet lasts (ms)
+   jetTime = 1270;       //how long after jumping the jet lasts (ms)
    jetJumpForce = 812.5;
    jetJumpEnergyDrain = 0;
    jetMinJumpEnergy = 0;
@@ -325,7 +325,7 @@ datablock AAKPlayerData(AAKDefaultPlayerData)
    //Ground Snap
    //a ray is cast down from player. If a sloped surface is found the player is moved down (visually) to
    //stand on it. This helps on slopes where otherwise the player appears to float above the surface
-   groundSnapSpeed = 0.02;       //how fast to move player down (units/tick). Use 0 to turn this feature off
+   groundSnapSpeed = 0.0;       //how fast to move player down (units/tick). Use 0 to turn this feature off
    groundSnapRayLength = 0.6;    //length of ray (units down from player origin - his feet). Make sure it's long enough to work on steep slopes
    groundSnapRayOffset = -0.05;   //forward offset for ray in case feet are forward or back of origin (units). Positive = forward, Negative = backward
 	

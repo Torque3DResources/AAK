@@ -1,0 +1,7 @@
+<SoundAsset
+    AssetName="desert_wind_soft">
+    <SoundAsset.slots>
+        <slots_beginarray
+            SoundFile="@assetFile=desert_wind_soft.ogg"/>
+    </SoundAsset.slots>
+</SoundAsset>

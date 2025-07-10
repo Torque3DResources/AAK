@@ -40,7 +40,7 @@ void CameraGoalExplicit::processTick(const Move*)
    F32 yaw, pitch;
    MathUtils::getAnglesFromVector(mTargetVector, yaw, pitch);
 
-   mRot.x = pitch;
+   mRot.x = -pitch;
    mRot.z = yaw;
 
    if (isClientObject())
