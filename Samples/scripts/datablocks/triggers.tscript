@@ -1,15 +1,13 @@
 datablock TriggerData(HUDTriggerData)
 {
    tickPeriodMS = 100;
+   class = "HUDTriggerData";
 };
 
 function HUDTriggerData::onEnterTrigger(%this, %trigger, %obj)
 {
-   //Parent::onEnterTrigger(%this,%trigger,%obj);
-   echo("ANYTHING?");
    %imageName = %trigger.getFieldValue(%this.targetVar);
    
-   echo("FIELD VALUE OF:" @ %imageName @ " FOR HUD TRIGGER TYPE OF: " @ %this.targetGUI);
    if(%imageName !$= "")
    {
       %this.targetGUI.visible = true;
@@ -18,6 +16,10 @@ function HUDTriggerData::onEnterTrigger(%this, %trigger, %obj)
    }
 }
 
+function TutorialHUDTrigger::onEnterTrigger(%this, %trigger, %obj)
+{
+   HUDTriggerData::onEnterTrigger(%this,%trigger,%obj);
+}
 
 datablock TriggerData(TutorialHUDTrigger : HUDTriggerData)
 {

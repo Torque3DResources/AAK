@@ -550,7 +550,8 @@ bool CameraGoalFollower::setGoalObject(ShapeBase *obj, S32 ms)
 	if(bool(mGoalObjectPrev))
 		deleteNotify(mGoalObjectPrev);
 
-	setMaskBits(UpdateMask);
+   if(isServerObject())
+	   setMaskBits(UpdateMask);
 
 	return true;
 }

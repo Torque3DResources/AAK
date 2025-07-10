@@ -2,7 +2,7 @@
 // Footsteps
 //======================================================================
 
-new SFXPlayList(playerFootstepSand)
+/*new SFXPlayList(playerFootstepSand)
 {
    description = AudioEffect;
    numSlotsToPlay = 1;
@@ -13,11 +13,11 @@ new SFXPlayList(playerFootstepSand)
    pitchScaleVariance[0] = "-0.1 0.1";
    pitchScaleVariance[1] = "-0.1 0.1";
    pitchScaleVariance[2] = "-0.1 0.1";
-};
+};*/
 
 //----------------------------------------------------------------------
 
-new SFXPlayList(playerFootstepStone)
+/*new SFXPlayList(playerFootstepStone)
 {
    description = AudioEffect;
    numSlotsToPlay = 1;
@@ -28,7 +28,7 @@ new SFXPlayList(playerFootstepStone)
    pitchScaleVariance[0] = "-0.1 0.1";
    pitchScaleVariance[1] = "-0.1 0.1";
    pitchScaleVariance[2] = "-0.1 0.1";
-};
+};*/
 
 //======================================================================
 // Stopping
@@ -42,7 +42,7 @@ new SFXPlayList(playerFootstepStone)
 
 //----------------------------------------------------------------------
 
-new SFXPlayList(playerJump)
+/*new SFXPlayList(playerJump)
 {
    description = AudioEffect;
    numSlotsToPlay = 1;
@@ -53,7 +53,7 @@ new SFXPlayList(playerJump)
    pitchScaleVariance[0] = "-0.1 0.1";
    pitchScaleVariance[1] = "-0.1 0.1";
    pitchScaleVariance[2] = "-0.1 0.1";
-};
+};*/
 
 //======================================================================
 // Landing

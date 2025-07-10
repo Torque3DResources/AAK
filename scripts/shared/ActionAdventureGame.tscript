@@ -221,7 +221,7 @@ function ActionAdventureGame::onPostSpawn(%this, %client)
    %client.setControlObject(%client.player);
    %client.setFirstPerson(false);
    
-   if(isObject(saveData))
+   /*if(isObject(saveData))
    {
       //load successful, use saveData
       %client.player.dieOnNextCollision = false;
@@ -231,7 +231,7 @@ function ActionAdventureGame::onPostSpawn(%this, %client)
       %client.client.cameraGoalPlayer.setTransform(saveData.cameraGoalPlayerTransform);
       %client.client.cameraGoalFollower.setTransform(saveData.cameraGoalFollowerTransform);
       echo("Loaded autosave!");
-   }
+   }*/
 }
 
 //-----------------------------------------------------------------------------

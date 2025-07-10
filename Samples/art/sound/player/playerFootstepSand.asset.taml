@@ -1,0 +1,25 @@
+<SoundAsset
+    AssetName="playerFootstepSand"
+    is3D="true"    
+    sourceGroup="AudioChannelEffects"
+    minDistance="0"
+    MaxDistance="60"
+    random="OrderedRandom"
+    numSlotsToPlay="3"
+    maxSize="1"
+    MinSize="0.1"
+    pitch="1"
+    priority="1"
+    VersionId="1"
+    volume="1">
+    <SoundAsset.slots>
+        <slots_beginarray
+            SoundFile="@assetFile=player_footstep_sand01.ogg"
+            MaxDistance="60"/>
+        <slots_beginarray
+            SoundFile="@assetFile=player_footstep_sand02.ogg"/>
+        <slots_beginarray
+            SoundFile="@assetFile=player_footstep_sand03.ogg"/>
+  DelayTimeIn="0"/>
+    </SoundAsset.slots>
+</SoundAsset>

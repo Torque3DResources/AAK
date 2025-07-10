@@ -4,10 +4,10 @@ function AAK::PlayGUI_onWake(%this)
    {
       //Ubiq: tutorial/feature/credit notes
       new GuiContainer(UbiqUI) {
-         HorizSizing = "right";
-         VertSizing = "bottom";
+         HorizSizing = "width";
+         VertSizing = "height";
          position = "0 0";
-         Extent = "1024 768";
+         Extent = PlayGui.extent;
          MinExtent = "8 8";
          canSave = "0";
          
