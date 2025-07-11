@@ -1,0 +1,52 @@
+datablock TriggerData(HUDTriggerData)
+{
+   tickPeriodMS = 100;
+   class = "HUDTriggerData";
+};
+
+function HUDTriggerData::onEnterTrigger(%this, %trigger, %obj)
+{
+   %imageName = %trigger.getFieldValue(%this.targetVar);
+   
+   if(%imageName !$= "")
+   {
+      %this.targetGUI.visible = true;
+      %this.targetGUI.setBitmap("AAK:" @ %imageName @ "_image");
+      %this.targetGUI.schedule(10000, "setVisible", false);
+   }
+}
+
+function TutorialHUDTrigger::onEnterTrigger(%this, %trigger, %obj)
+{
+   HUDTriggerData::onEnterTrigger(%this,%trigger,%obj);
+}
+
+datablock TriggerData(TutorialHUDTrigger : HUDTriggerData)
+{
+   targetGUI = TutorialHUD;
+   targetVar = "tutorialType";
+};
+
+datablock TriggerData(FeatureHUDTrigger : HUDTriggerData)
+{
+   targetGUI = FeatureHUD;
+   targetVar = "messageType";
+};
+
+datablock TriggerData(WelcomeHUDTrigger : HUDTriggerData)
+{
+   targetGUI = WelcomeHUD;
+   targetVar = "messageType";
+};
+
+datablock TriggerData(HintHUDTrigger : HUDTriggerData)
+{
+   targetGUI = HintHUD;
+   targetVar = "messageType";
+};
+
+datablock TriggerData(CreditsHUDTrigger : HUDTriggerData)
+{
+   targetGUI = CreditsHUD;
+   targetVar = "messageType";
+};

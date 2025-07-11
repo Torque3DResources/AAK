@@ -24,7 +24,7 @@
 // Demo Pathed AIPlayer.
 //-----------------------------------------------------------------------------
 
-datablock AAKPlayerData(AAKDemoPlayer : AAKDefaultPlayerData)
+datablock PlayerData(AAKDemoPlayer : AAKDefaultPlayerData)
 {
    shootingDelay = 2000;
 };

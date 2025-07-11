@@ -1,0 +1,35 @@
+<TerrainMaterialAsset
+    AssetName="terrainSandMat"
+    materialDefinitionName="terrainSandMat"
+    VersionId="1">
+    <TerrainMaterial
+        Name="terrainSandMat"
+        DiffuseMapAsset="AAK:DesertSand_COL_image"
+        diffuseSize="200"
+        NormalMapAsset="AAK:sand_blown_micro_normal_image"
+        DetailMapAsset="AAK:sand_blown_micro_image"
+        detailSize="10"
+        detailStrength="0.2"
+        detailDistance="200"
+        ORMConfigMapAsset="AAK:DesertSand_ORM_image"
+        internalName="AAK:terrainSandMat"
+        detailBrightness="1"
+        enabled="1"
+        isManaged="1"
+        originalAssetName="terrainSandMat"/>
+    <Material
+        Name="TerrainFX_terrainSandMat"
+        mapTo="AAK:terrainSandMat"
+        showDust="true"
+        impactSoundId="0"
+        customFootstepSound="AAK:playerFootstepSand"
+        materialTag0="Terrain"
+        terrainMaterials="1">
+        <Material.EffectColors>
+            <EffectColor
+                EffectColor="0.42 0.42 0 1"/>
+            <EffectColor
+                EffectColor="0.42 0.42 0 1"/>
+        </Material.EffectColors>
+    </Material>
+</TerrainMaterialAsset>

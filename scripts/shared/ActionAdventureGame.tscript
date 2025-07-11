@@ -1,0 +1,368 @@
+//-----------------------------------------------------------------------------
+// Copyright (c) 2012 GarageGames, LLC
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+// sell copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+// IN THE SOFTWARE.
+//-----------------------------------------------------------------------------
+
+if(!isObject(ActionAdventureGame))
+{
+   new GameMode(ActionAdventureGame){};  
+}
+
+function ActionAdventureGame::onMissionStart(%this)
+{
+   //set up the game and game variables
+   %this.initGameVars();
+}
+
+function ActionAdventureGame::onMissionEnded(%this)
+{
+}
+
+function ActionAdventureGame::onMissionReset(%this)
+{
+   // Called by resetMission(), after all the temporary mission objects
+   // have been deleted.
+   %this.initGameVars();
+}
+
+function ActionAdventureGame::initGameVars(%this)
+{
+}
+
+function ActionAdventureGame::onGameDurationEnd()
+{
+}
+
+function ActionAdventureGame::spawnControlObject(%this, %client)
+{
+}
+
+function ActionAdventureGame::onClientMissionLoaded(%this)
+{
+    $clientLoaded++;
+    if ($clientLoaded == $clientConneted)
+        $gameReady = true;
+}
+
+function ActionAdventureGame::onClientConnect(%this, %client)
+{
+   $clientConneted++;
+}
+
+function ActionAdventureGame::onClientEnterGame(%client)
+{
+   //start blue maco on his path
+   blueMaco.followPath(blueMaco_path, -1);
+
+   // This function currently relies on some helper functions defined in
+   // core/scripts/spawn.cs. For custom spawn behaviors one can either
+   // override the properties on the SpawnSphere's or directly override the
+   // functions themselves.
+
+  // Sync the client's clocks to the server's
+   //commandToClient(%client, 'SyncClock', $Sim::Time - $Game::StartTime);
+   
+   //Set the player name based on the client's connection data
+   %client.setPlayerName(%client.connectData);
+   
+   //Ubiq: load autosave (see triggers.cs SaveTrigger for saving)
+   //-----------------------------------------------
+   //delete saveData if it already exists
+   if(isObject(saveData))
+      saveData.delete();
+      
+   //load from the save
+   %file = fileBase($Server::MissionFile);
+   %path = "saves/"@%file@"-autosave.sav";
+   echo("Loading autosave from "@%path@"...");
+ 
+   if(isfile(%path))
+      exec(%path);
+}
+
+//
+//
+function ActionAdventureGame::SetSpawnObjectType(%this, %client)
+{
+   %client.spawnClass = "AAKPlayer";
+   %client.spawnDBType = "AAKPlayerData";
+   %client.spawnDataBlock = "AAKDefaultPlayerData";
+
+   %this.setSpawnObjectTypeComplete(%client);
+}
+
+function ActionAdventureGame::setSpawnObjectTypeComplete(%this, %client)
+{
+   %client.getEventManager().postEvent("setSpawnObjectTypeComplete", %client);
+}
+
+function ActionAdventureGame::setSpawnObjectTypeFailed(%this, %client)
+{
+   %client.getEventManager().postEvent("setSpawnObjectTypeFailed", %client);
+}
+
+//
+function ActionAdventureGame::setSpawnPoint(%this, %client)
+{
+    %client.playerSpawnGroups = "spawn_player CameraSpawnPoints PlayerSpawnPoints PlayerDropPoints";
+
+    %spawnPosition = "";
+    
+   if(isObject(saveData))
+   {
+      //load successful, use saveData
+      %spawnPosition = saveData.playerTransform;
+   }
+   else
+   {
+      //no autosave file, or something went wrong
+      //just leave the player spawned as normal
+      echo("Failed to load autosave!");
+   }
+    
+    if(%spawnPosition $= "")
+    {
+       %spawnPoint = pickPlayerSpawnPoint(%client.playerSpawnGroups);
+       if(isObject(%spawnPoint))
+       {
+          %spawnPosition = %spawnPoint.getPosition();
+       }
+    }
+    
+    //If we know where we're going to spawn, push that
+    if(%spawnPosition !$= "")
+    {
+       %client.SpawnLocation = %spawnPosition;
+       getRootScene().loadAtPosition(%client.SpawnLocation);  
+       
+       %this.setSpawnPointComplete(%client);
+    }
+    else
+    {
+       %this.setSpawnPointFailed(%client);  
+    }
+}
+
+function ActionAdventureGame::setSpawnPointComplete(%this, %client)
+{
+   //Fire the signal that we are, in fact, fully finished
+   %client.GetEventManager().postEvent( "setSpawnPointComplete", %client );
+}
+
+function ActionAdventureGame::setSpawnPointFailed(%this, %client)
+{
+   //Fire the signal that we are, in fact, fully finished
+   %client.GetEventManager().postEvent( "setSpawnPointFailed", %client );
+}
+
+//
+function ActionAdventureGame::onPostSpawn(%this, %client)
+{
+   //Ubiq:
+   //-----------------------------------------------
+   //create a cameraGoalFollower
+   %client.cameraGoalFollower = new CameraGoalFollower() {
+      dataBlock = CameraGoalFollowerDB;
+   };
+   %client.cameraGoalFollower.scopeToClient(%client);
+   //-----------------------------------------------
+   //create a cameraGoalPlayer
+   %client.cameraGoalPlayer = new CameraGoalPlayer() {
+      dataBlock = CameraGoalPlayerDB;
+   };
+   %client.cameraGoalPlayer.scopeToClient(%client);
+   //-----------------------------------------------
+   //create a cameraGoalPath
+   %client.cameraGoalPath = new CameraGoalPath() {
+      dataBlock = CameraGoalPathDB;
+   };
+   %client.cameraGoalPath.scopeToClient(%client);
+   //-----------------------------------------------
+   %client.cameraGoalExplicit = new CameraGoalExplicit() {
+      dataBlock = CameraGoalExplicitDB;
+   };
+   %client.cameraGoalExplicit.scopeToClient(%client);
+   //-----------------------------------------------
+   
+   //-----------------------------------------------
+   //update the cameraGoalPlayer to follow the new player we spawned
+   %client.cameraGoalPlayer.setPlayerObject(%client.player);
+   
+   //the cameraGoalPlayer needs Moves (for manual orbit mode)
+   //this line asks the player to send a copy of it's Move to it
+   %client.player.setControlObject(%client.cameraGoalPlayer);
+   
+   //update the cameraGoalPath to follow the new player we spawned
+   %client.cameraGoalPath.setPlayerObject(%client.player);
+   
+   //update the goal camera to follow the player and player goal
+   %client.cameraGoalFollower.setPlayerObject(%client.player);
+   %client.cameraGoalFollower.setGoalObject(%client.cameraGoalPlayer);   
+   
+   //use the cameraGoalFollower as our camera
+   %client.setCameraObject(%client.cameraGoalFollower);
+   %client.setControlObject(%client.player);
+   %client.setFirstPerson(false);
+   
+   /*if(isObject(saveData))
+   {
+      //load successful, use saveData
+      %client.player.dieOnNextCollision = false;
+      %client.player.setDamageLevel(saveData.playerDamage);
+      %client.player.setActionThread("root", true, false);
+      %client.player.setVelocity("0 0 0");
+      %client.client.cameraGoalPlayer.setTransform(saveData.cameraGoalPlayerTransform);
+      %client.client.cameraGoalFollower.setTransform(saveData.cameraGoalFollowerTransform);
+      echo("Loaded autosave!");
+   }*/
+}
+
+//-----------------------------------------------------------------------------
+// Clean up the client's control objects
+//-----------------------------------------------------------------------------
+function ActionAdventureGame::onClientLeaveGame(%this, %client)
+{
+   // Cleanup the camera
+   if (isObject(%client.camera))
+      %client.camera.delete();
+      
+   if (isObject(%client.cameraGoalFollower))
+      %client.cameraGoalFollower.delete();
+      
+   if (isObject(%client.cameraGoalPlayer))
+      %client.cameraGoalPlayer.delete();
+      
+   if (isObject(%client.cameraGoalPath))
+      %client.cameraGoalPath.delete();
+      
+   if (isObject(%client.cameraGoalExplicit))
+      %client.cameraGoalExplicit.delete();
+      
+   // Cleanup the player
+   if (isObject(%client.player))
+      %client.player.delete();
+}
+
+//-----------------------------------------------------------------------------
+// Handle a player's death
+//-----------------------------------------------------------------------------
+function ActionAdventureGame::onDeath(%this, %sourceObject, %sourceClient, %damageType, %damLoc)
+{
+   // Clear out the name on the corpse
+   if (isObject(%this.player))
+   {
+      if (%this.player.isMethod("setShapeName"))
+         %this.player.setShapeName("");
+   }
+
+    // Switch the client over to the death cam
+    if (isObject(%this.camera) && isObject(%this.player))
+    {
+        %this.camera.setMode("Corpse", %this.player);
+        %this.setControlObject(%this.camera);
+    }
+
+    // Unhook the player object
+    //Ubiq: Lorne: we need to keep this reference so we can delete the corpse when respawning
+    //%this.player = 0;
+}
+
+//-----------------------------------------------------------------------------
+// The server has started up so do some game start up
+//-----------------------------------------------------------------------------
+function ActionAdventureGame::onMissionStart(%this)
+{
+   //echo (%game @"\c4 -> "@ %game.class @" -> GameCore::onStartGame");
+   if ($Game::Running)
+   {
+      error("startGame: End the game first!");
+      return;
+   }
+
+   // Inform the client we're starting up
+   for (%clientIndex = 0; %clientIndex < ClientGroup.getCount(); %clientIndex++)
+   {
+      %cl = ClientGroup.getObject(%clientIndex);
+      commandToClient(%cl, 'GameStart');
+
+      // Other client specific setup..
+      %cl.score = 0;
+      %cl.kills = 0;
+      %cl.deaths = 0;
+   }
+      
+   $Game::Running = true;
+   
+   $Game = %this;
+}
+
+function ActionAdventureGame::onMissionEnded(%this)
+{
+   if (!$Game::Running)
+   {
+      error("endGame: No game running!");
+      return;
+   }
+
+   // Stop any game timers
+   cancel($Game::Schedule);
+
+   for (%clientIndex = 0; %clientIndex < ClientGroup.getCount(); %clientIndex++)
+   {
+      %cl = ClientGroup.getObject(%clientIndex);
+      commandToClient(%cl, 'GameEnd', $Game::EndGamePause);
+   }
+
+   $Game::Running = false;
+   $Game::Cycling = false;
+   $Game = "";
+}
+
+function ActionAdventureGame::onMissionReset(%this)
+{
+   // Called by resetMission(), after all the temporary mission objects
+   // have been deleted.
+}
+
+// ----------------------------------------------------------------------------
+// Server
+// ----------------------------------------------------------------------------
+
+// Called by GameCore::cycleGame() when we need to destroy the server
+// because we're done playing.  We don't want to call destroyServer()
+// directly so we can first check that we're about to destroy the
+// correct server session.
+function ActionAdventureGame::DestroyServer(%serverSession)
+{
+   if (%serverSession == $Server::Session)
+   {
+      if (isObject(LocalClientConnection))
+      {
+         // We're a local connection so issue a disconnect.  The server will
+         // be automatically destroyed for us.
+         disconnect();
+      }
+      else
+      {
+         // We're a stand alone server
+         destroyServer();
+      }
+   }
+}

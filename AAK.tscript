@@ -20,9 +20,13 @@ function AAK::initServer(%this)
       %this.queueExec("./Samples/scripts/server/spawn");
    }
    
-	%this.queueExec("./scripts/server/ActionAdventureGame");
-
+	%this.queueExec("./scripts/shared/ActionAdventureGame");
+	%this.queueExec("./scripts/server/triggerCallbacks");
 	
+	if(isToolBuild())
+   {
+      %this.queueExec("./tools/debugging");
+   }
 }
 
 //This is called when the server is created for an actual game/map to be played
@@ -35,6 +39,7 @@ function AAK::onCreateGameServer(%this)
       %this.registerDatablock("./Samples/scripts/datablocks/player");
       %this.registerDatablock("./Samples/scripts/datablocks/aiPlayer");
       %this.registerDatablock("./Samples/scripts/datablocks/dust");
+      %this.registerDatablock("./Samples/scripts/datablocks/triggers");
    }
 	
 	%this.registerDatablock("./scripts/datablocks/camera");
@@ -65,9 +70,13 @@ function AAK::initClient(%this)
          //
 
          exec("./Samples/scripts/client/inputCommands"); 
+         
+         %this.queueExec("./Samples/scripts/client/playGUI");
            
          //client only sounds
          %this.queueExec("./Samples/art/clientMusic");
+         
+         %this.queueExec("./scripts/shared/ActionAdventureGame");
       }
    }
 }
@@ -80,4 +89,18 @@ function AAK::onCreateClientConnection(%this)
 //This is called when a client disconnects from a server
 function AAK::onDestroyClientConnection(%this)
 {
+}
+
+function aakPlayerMetricsCallback()
+{
+   return "  | AAKPlayer |\n" @ 
+          "  is jumping: " @ $AAKPlayer::jumping @ "\n" @
+          "  jump height: " @ $AAKPlayer::jumpHeight @ "\n" @
+          "  num of jumps: " @ $AAKPlayer::numberOfJumps @ "\n" @ 
+          "  jumping accel: " @ $AAKPlayer::jumpingAccel @ "\n" @
+          "  max jump accel: " @ $AAKPlayer::maxJumpAccel @ "\n" @
+          "  acceleration z: " @ $AAKPlayer::acceleration_z @ "\n" @
+          "  max jump speed: " @ $AAKPlayer::maxJumpSpeed @ "\n" @
+          "  velocity z: " @ $AAKPlayer::velocity_z @ "\n" @
+          "  horiz velocity: " @ $AAKPlayer::hor_vel;
 }

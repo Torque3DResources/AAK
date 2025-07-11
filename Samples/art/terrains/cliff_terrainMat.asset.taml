@@ -12,6 +12,10 @@
         detailStrength="0.5"
         detailDistance="2000"
         useSideProjection="true"
-        internalName="cliff_terrainMat"
-        customFootstepSound="playerFootstepStone"/>
+        internalName="AAK:cliff_terrainMat"
+        customFootstepSound="AAK:playerFootstepStone"
+        originalAssetName="cliff_terrainMat"/>
+    <Material
+        Name="TerrainFX_cliff_terrainMat"
+        mapTo="AAK:cliff_terrainMat"/>
 </TerrainMaterialAsset>

@@ -28,7 +28,12 @@
 #include "math/mathUtils.h"
 #include "AAKUtils.h"
 
+static bool sRenderCameraGoalPathRays = false;
+
 IMPLEMENT_CO_NETOBJECT_V1(CameraGoalPath);
+
+IMPLEMENT_CALLBACK(CameraGoalPath, onLeaveRange, void, (GameBase* obj), (obj),
+   "@brief Called when an object leaves the maximum range of the CameraGoalPath.\n\n");
 
 CameraGoalPath::CameraGoalPath()
 {
@@ -42,11 +47,11 @@ CameraGoalPath::CameraGoalPath()
 	mDelta.timeVec = 0;
 
 	mT = 0;
-   mPlayerPathIndex = SimPath::Path::NoPathIndex;
+    mPlayerPathIndex = SimPath::Path::NoPathIndex;
 	mCameraPathIndex = SimPath::Path::NoPathIndex;
 	mPlayerObject = NULL;
 	mLookAtPlayer = false;
-
+   mMaxRange = -1.0f;
 	//choose our path manager (server/client)
 	if(isServerObject())
 		mPathManager = gServerPathManager;
@@ -56,6 +61,14 @@ CameraGoalPath::CameraGoalPath()
 
 CameraGoalPath::~CameraGoalPath()
 {
+}
+
+void CameraGoalPath::consoleInit()
+{
+   Con::addVariable("$CameraGoalPath::renderCameraGoalPathRays", TypeBool, &sRenderCameraGoalPathRays,
+      "@brief Determines if the cameraGoal's collision interaction rays should be rendered.\n\n"
+      "This is mainly used for the tools and debugging.\n"
+      "@ingroup GameObjects\n");
 }
 
 F32 CameraGoalPath::getUpdatePriority(CameraScopeQuery *camInfo, U32 updateMask, S32 updateSkips)
@@ -79,19 +92,62 @@ void CameraGoalPath::processTick(const Move*)
 	mPathManager->getPathPosition(mCameraPathIndex, mT, mPosition, mRot);
 
 #ifdef ENABLE_DEBUGDRAW
-	Point3F debugCameraPos, debugPlayerPos; QuatF dummy;
-	mPathManager->getPathPosition(mCameraPathIndex, mT, debugCameraPos, dummy);
-	mPathManager->getPathPosition(mPlayerPathIndex, mT, debugPlayerPos, dummy);
-	DebugDrawer::get()->drawLine(playerPos, debugPlayerPos, ColorI::BLUE);
-	DebugDrawer::get()->setLastTTL(TickMs);
-	DebugDrawer::get()->drawLine(debugPlayerPos, debugCameraPos, ColorI::RED);
-	DebugDrawer::get()->setLastTTL(TickMs);
+   if (sRenderCameraGoalPathRays)
+   {
+      Point3F debugCameraPos, debugPlayerPos; QuatF dummy;
+      mPathManager->getPathPosition(mCameraPathIndex, mT, debugCameraPos, dummy);
+      mPathManager->getPathPosition(mPlayerPathIndex, mT, debugPlayerPos, dummy);
+      DebugDrawer::get()->drawLine(playerPos, debugPlayerPos, ColorI::BLUE);
+      DebugDrawer::get()->setLastTTL(TickMs);
+      DebugDrawer::get()->drawLine(debugPlayerPos, debugCameraPos, ColorI::RED);
+      
+      U32 numCamPathPoints = mPathManager->getPathNumWaypoints(mCameraPathIndex);
+      U32 numPlayerathPoints = mPathManager->getPathNumWaypoints(mPlayerPathIndex);
+
+      if (numCamPathPoints == numPlayerathPoints)
+      {
+         for (U32 i = 0; i < numCamPathPoints; i++)
+         {
+            U32 camPathPointTime = mPathManager->getWaypointTime(mCameraPathIndex, i);
+            U32 playerPathPointTime = mPathManager->getWaypointTime(mPlayerPathIndex, i);
+
+            Point3F camPathPointPos, playerPathPointPos;
+
+            mPathManager->getPathPosition(mCameraPathIndex, camPathPointTime, camPathPointPos, dummy);
+            mPathManager->getPathPosition(mPlayerPathIndex, playerPathPointTime, playerPathPointPos, dummy);
+
+            VectorF vec = playerPathPointPos - camPathPointPos;
+            F32 vecLen = vec.len();
+            vec.normalizeSafe();
+
+            Point3F mid = camPathPointPos + (vec * (vecLen * 0.5f));
+
+            ColorI lineColor = ColorI::GREEN;
+            if(vecLen > mMaxRange)
+               lineColor = ColorI::RED;
+
+            DebugDrawer::get()->drawLine(camPathPointPos, playerPathPointPos, lineColor);
+            DebugDrawer::get()->drawText(mid, Con::getFloatArg(vecLen));
+         }
+      }
+
+      DebugDrawer::get()->setLastTTL(TickMs);
+   }
 #endif
 
 	//look at player
 	if(mLookAtPlayer)
 	{
 		Point3F camToPlayerVec = playerPos - mPosition;
+      Point3F loc;
+
+      bool invalidPos = (mMaxRange > 0 && camToPlayerVec.len() > mMaxRange);
+      /*if (!MathUtils::mProjectWorldToScreen(playerPos, &loc, GFX->getViewport(), GFX->getWorldMatrix(), GFX->getProjectionMatrix()))
+         invalidPos = true;*/
+
+      if (invalidPos == true)
+         onLeaveRange_callback(mPlayerObject);
+
 		camToPlayerVec.normalizeSafe();
 		F32 camToPlayerYaw, camToPlayerPitch;
       AAKUtils::getAnglesFromVector(camToPlayerVec, camToPlayerYaw, camToPlayerPitch);
@@ -272,17 +328,18 @@ DefineEngineMethod( CameraGoalPath, setPlayerPathObject, bool, (SimPath::Path* p
 
 //===============================================================================
 
-bool CameraGoalPath::setCameraPathObject(SimPath::Path *obj)
+bool CameraGoalPath::setCameraPathObject(SimPath::Path *obj, F32 maxRange)
 {
  	if(!obj)
 		return false;
 
+   mMaxRange = maxRange;
 	mCameraPathIndex = obj->getPathIndex();
 	setMaskBits(CameraPathMask);
 	return true;
 }
 
-DefineEngineMethod( CameraGoalPath, setCameraPathObject, bool, (SimPath::Path* pathObj), (nullAsType<SimPath::Path*>()), "(Path object)")
+DefineEngineMethod( CameraGoalPath, setCameraPathObject, bool, (SimPath::Path* pathObj, F32 maxRange), (nullAsType<SimPath::Path*>(),-1.0f), "(Path object)")
 {
 	if(pathObj == nullptr)
 	{
@@ -290,7 +347,7 @@ DefineEngineMethod( CameraGoalPath, setCameraPathObject, bool, (SimPath::Path* p
 		return false;
 	}
 
-	return object->setCameraPathObject(pathObj);
+	return object->setCameraPathObject(pathObj, maxRange);
 }
 
 //===============================================================================

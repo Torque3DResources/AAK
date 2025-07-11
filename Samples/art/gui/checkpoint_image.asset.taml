@@ -1,0 +1,3 @@
+<ImageAsset
+    AssetName="checkpoint_image"
+    imageFile="@assetFile=checkpoint.png"/>

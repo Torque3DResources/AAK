@@ -1,0 +1,45 @@
+function AAK::setupEditorVisibilityMenu(%this)
+{
+   EVisibilityDebugRenderOptions.appendItem("-");
+   %this.playerHelperVizId = EVisibilityDebugRenderOptions.appendItem("Show AAK Player Helpers" TAB "" TAB %this @ ".toggleAAKPlayerHelperViz();");
+   
+   EVisibilityDebugRenderOptions.appendItem("-");
+   %this.playerCamGoalVizId = EVisibilityDebugRenderOptions.appendItem("Show AAK Player Cam Goal Rays" TAB "" TAB %this @ ".toggleAAKRenderPlayerCamGoalViz();");
+   %this.pathCamGoalVizId = EVisibilityDebugRenderOptions.appendItem("Show AAK Path Cam Rays" TAB "" TAB %this @ ".toggleAAKRenderPathCamGoalViz();");
+   %this.camBlockersVizId = EVisibilityDebugRenderOptions.appendItem("Show AAK Camera Blockers" TAB "" TAB %this @ ".toggleAAKRenderCamBlockerViz();");
+}
+
+function AAK::toggleAAKPlayerColViz(%this)
+{
+   $AAKPlayer::renderCollision = !$AAKPlayer::renderCollision;  
+   EVisibilityDebugRenderOptions.checkItem(%this.playerColVizId, $AAKPlayer::renderCollision);
+}
+
+function AAK::toggleAAKPlayerHelperViz(%this)
+{
+   $AAKPlayer::renderHelpers = !$AAKPlayer::renderHelpers;  
+   EVisibilityDebugRenderOptions.checkItem(%this.playerHelperVizId, $AAKPlayer::renderHelpers);
+}
+
+//
+//
+function AAK::toggleAAKRenderPlayerCamGoalViz(%this)
+{
+   $CameraGoalPlayer::renderCameraGoalRays = !$CameraGoalPlayer::renderCameraGoalRays;  
+   EVisibilityDebugRenderOptions.checkItem(%this.playerCamGoalVizId, $CameraGoalPlayer::renderCameraGoalRays);
+}
+
+function AAK::toggleAAKRenderPathCamGoalViz(%this)
+{
+   $CameraGoalPath::renderCameraGoalPathRays = !$CameraGoalPath::renderCameraGoalPathRays;  
+   EVisibilityDebugRenderOptions.checkItem(%this.pathCamGoalVizId, $CameraGoalPath::renderCameraGoalPathRays);
+}
+
+function AAK::toggleAAKRenderCamBlockerViz(%this)
+{
+   $CameraBlocker::renderBlockers = !$CameraBlocker::renderBlockers;  
+   EVisibilityDebugRenderOptions.checkItem(%this.camBlockersVizId, $CameraBlocker::renderBlockers);
+}
+
+
+

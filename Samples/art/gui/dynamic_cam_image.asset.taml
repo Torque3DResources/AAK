@@ -1,0 +1,3 @@
+<ImageAsset
+    AssetName="dynamic_cam_image"
+    imageFile="@assetFile=dynamic_cam.png"/>

@@ -42,6 +42,8 @@ CameraGoalPlayerData::CameraGoalPlayerData()
 {
 	manualTransitionTime = 250;
 	radiusDefault = 6.0f;
+   maxDynamicRadius = 8.0f;
+   useDynamicRadius = false;
 	radiusManual = 4.0f;
 	offCenterY = 1.0f;
 	offCenterX = 1.0f;
@@ -61,6 +63,8 @@ void CameraGoalPlayerData::initPersistFields()
 
 	addField("manualTransitionTime", TypeF32, Offset(manualTransitionTime, CameraGoalPlayerData));
 	addField("radiusDefault", TypeF32, Offset(radiusDefault, CameraGoalPlayerData));
+   addField("maxDynamicRadius", TypeF32, Offset(maxDynamicRadius, CameraGoalPlayerData));
+   addField("useDynamicRadius", TypeBool, Offset(useDynamicRadius, CameraGoalPlayerData));
 	addField("radiusManual", TypeF32, Offset(radiusManual, CameraGoalPlayerData));
 	addField("offCenterY", TypeF32, Offset(offCenterY, CameraGoalPlayerData));
 	addField("offCenterX", TypeF32, Offset(offCenterX, CameraGoalPlayerData));
@@ -75,6 +79,8 @@ void CameraGoalPlayerData::packData(BitStream* stream)
 
 	stream->write(manualTransitionTime);
 	stream->write(radiusDefault);
+   stream->write(maxDynamicRadius);
+   stream->write(useDynamicRadius);
 	stream->write(radiusManual);
 	stream->write(offCenterY);
 	stream->write(offCenterX);
@@ -89,6 +95,8 @@ void CameraGoalPlayerData::unpackData(BitStream* stream)
 
 	stream->read(&manualTransitionTime);
 	stream->read(&radiusDefault);
+   stream->read(&maxDynamicRadius);
+   stream->read(&useDynamicRadius);
 	stream->read(&radiusManual);
 	stream->read(&offCenterY);
 	stream->read(&offCenterX);
@@ -147,10 +155,14 @@ CameraGoalPlayer::CameraGoalPlayer()
 	mForcedRadius = 0;
 	mForcedRadiusSpeed = 0;
 	
-	mOffCenterXTarget = 1.0f;	//player on right of screen
-	mOffCenterXCurrent = 1.0f;
+	mOffCenterXTarget = 0.f;	//player on right of screen
+	mOffCenterXCurrent = 0.f;
 
 	mAutoYaw = false;
+
+   mLookAtObject = nullptr;
+   mLookAtPosition = Point3F::Zero;
+   mHasLookAt = false;
 }
 
 CameraGoalPlayer::~CameraGoalPlayer()
@@ -287,287 +299,321 @@ void CameraGoalPlayer::getCameraTransform(F32* pos, MatrixF* mat)
 
 void CameraGoalPlayer::processTick(const Move* move)
 {
-	Parent::processTick(move);
+   Parent::processTick(move);
 
-	if (!move)
-		move = &NullMove;
+   if (!move)
+      move = &NullMove;
 
-	// Update delta
-	delta.rotVec = mRot;
-	delta.posVec = mPosition;
+   // Update delta
+   delta.rotVec = mRot;
+   delta.posVec = mPosition;
 
-	//check if we have a player object
-	if (mPlayerObject)
-	{
-		//grab current player position
-		mPlayerPos = mPlayerObject->getNodePosition("Cam");
+   //check if we have a player object
+   if (mPlayerObject)
+   {
+      //grab current player position
+      mPlayerPos = mPlayerObject->getNodePosition("Cam") + mPlayerObject->getVelocity() * TickSec * 2.0f;
 
-		//grab current player forward vector
-		mPlayerObject->getRenderTransform().getColumn(1, &mPlayerForward);
+      //grab current player forward vector
+      mPlayerObject->getRenderTransform().getColumn(1, &mPlayerForward);
       AAKUtils::getAnglesFromVector(mPlayerForward, mPlayerForwardYaw, mPlayerForwardPitch);
 
-		//if this is the first tick we have a player
-		if(mFirstTickWithPlayer)
-		{
-			mFirstTickWithPlayer = false;
+      //if this is the first tick we have a player
+      if (mFirstTickWithPlayer)
+      {
+         mFirstTickWithPlayer = false;
 
-			//warp instantly to perfect position behind player
-			orbitToYaw(mPlayerForwardYaw + M_PI_F);
-			orbitToPitch(0.0f);
-		}
+         //warp instantly to perfect position behind player
+         orbitToYaw(mPlayerForwardYaw + M_PI_F);
+         orbitToPitch(0.0f);
+      }
 
-		//--------------------------------------------
-		// update trigger states
-		//--------------------------------------------
-		const U16 trigNum = 4;
-		bool trigPressed = move->trigger[trigNum];
-		bool trigJustPressed = move->trigger[trigNum] && (move->trigger[trigNum] != delta.move.trigger[trigNum]);
-		bool trigJustReleased = !move->trigger[trigNum] && (move->trigger[trigNum] != delta.move.trigger[trigNum]);
+      //--------------------------------------------
+      // update trigger states
+      //--------------------------------------------
+      const U16 trigNum = 4;
+      bool trigPressed = move->trigger[trigNum];
+      bool trigJustPressed = move->trigger[trigNum] && (move->trigger[trigNum] != delta.move.trigger[trigNum]);
+      bool trigJustReleased = !move->trigger[trigNum] && (move->trigger[trigNum] != delta.move.trigger[trigNum]);
 
-		if(trigJustPressed)
-		{
-			//set our radius speed so we'll arrive in exactly manualTransitionTime ms
-			F32 radiusDiff = mRadius - mDataBlock->radiusManual;
-			mRadiusSpeed = mFabs(radiusDiff / (mDataBlock->manualTransitionTime / 1000.0f));
-			mRadiusSpeed = mClampF(mRadiusSpeed, 0, F32_MAX);
-		}
-		if(trigJustReleased)
-		{
-			//set our radius speed so we'll arrive in exactly manualTransitionTime ms
-			F32 radiusDiff = mRadius - mDataBlock->radiusDefault;
-			mRadiusSpeed = mFabs(radiusDiff / (mDataBlock->manualTransitionTime / 1000.0f));
-			mRadiusSpeed = mClampF(mRadiusSpeed, 0, F32_MAX);
+      if (trigJustPressed)
+      {
+         //set our radius speed so we'll arrive in exactly manualTransitionTime ms
+         F32 radiusDiff = mRadius - mDataBlock->radiusManual;
+         mRadiusSpeed = mFabs(radiusDiff / (mDataBlock->manualTransitionTime / 1000.0f));
+         mRadiusSpeed = mClampF(mRadiusSpeed, 0, F32_MAX);
+      }
+      else if (trigJustReleased)
+      {
+         //set our radius speed so we'll arrive in exactly manualTransitionTime ms
+         F32 radiusDiff = mRadius - mDataBlock->radiusDefault;
+         mRadiusSpeed = mFabs(radiusDiff / (mDataBlock->manualTransitionTime / 1000.0f));
+         mRadiusSpeed = mClampF(mRadiusSpeed, 0, F32_MAX);
 
-			//update our forced speeds (so we'll arrive at the
-			//forced position in exactly manualTransitionTime ms)
-			if(mForcedRadiusOn)
-				setForcedRadius(mForcedRadius, mDataBlock->manualTransitionTime);
-			if(mForcedYawOn)
-				setForcedYaw(mForcedYaw, mDataBlock->manualTransitionTime);
-			if(mForcedPitchOn)
-				setForcedPitch(mForcedPitch, mDataBlock->manualTransitionTime);
-		}
+         //update our forced speeds (so we'll arrive at the
+         //forced position in exactly manualTransitionTime ms)
+         if (mForcedRadiusOn)
+            setForcedRadius(mForcedRadius, mDataBlock->manualTransitionTime);
+         if (mForcedYawOn)
+            setForcedYaw(mForcedYaw, mDataBlock->manualTransitionTime);
+         if (mForcedPitchOn)
+            setForcedPitch(mForcedPitch, mDataBlock->manualTransitionTime);
+      }
+      else if(mDataBlock->useDynamicRadius)
+      {
+         if(mPlayerObject->getVelocity() != Point3F::Zero)
+         {
+            F32 radiusDiff = mRadius - mDataBlock->maxDynamicRadius;
+            mRadiusSpeed = mFabs(radiusDiff / (mDataBlock->manualTransitionTime / 1000.0f));
+            mRadiusSpeed = mClampF(mRadiusSpeed, 0, F32_MAX);
+         }
+         else
+         {
+            if(mForcedRadiusOn)
+            {
+               F32 radiusDiff = mRadius - mForcedRadius;
+               mRadiusSpeed = mFabs(radiusDiff / (mDataBlock->manualTransitionTime / 1000.0f));
+               mRadiusSpeed = mClampF(mRadiusSpeed, 0, F32_MAX);
+            }
+            else
+            {
+               F32 radiusDiff = mRadius - mDataBlock->radiusDefault;
+               mRadiusSpeed = mFabs(radiusDiff / (mDataBlock->manualTransitionTime / 1000.0f));
+               mRadiusSpeed = mClampF(mRadiusSpeed, 0, F32_MAX);
+            }
+         }
+      }
+
+      //--------------------------------------------
+      // update left/right offset
+      //--------------------------------------------
+      updateOffset();
 
 
-		//--------------------------------------------
-		// update left/right offset
-		//--------------------------------------------
-		updateOffset();
+      //--------------------------------------------
+      // update radius
+      //--------------------------------------------
+
+      //manual orbit
+      if (trigPressed)
+      {
+         zoomToRadius(mDataBlock->radiusManual, mRadiusSpeed);
+      }
+      else if (mDataBlock->useDynamicRadius)
+      {
+         if(mPlayerObject->getVelocity() != Point3F::Zero)
+            zoomToRadius(mDataBlock->maxDynamicRadius, mRadiusSpeed);
+         else
+         {
+            if(mForcedRadiusOn)
+               zoomToRadius(mForcedRadius, mRadiusSpeed);
+            else
+               zoomToRadius(mDataBlock->radiusDefault, mRadiusSpeed);
+         }
+      }
+      //forced radius
+      else if (mForcedRadiusOn)
+      {
+         zoomToRadius(mForcedRadius, mForcedRadiusSpeed);
+      }
+
+      //default radius
+      else
+      {
+         zoomToRadius(mDataBlock->radiusDefault, mRadiusSpeed);
+      }
 
 
-		//--------------------------------------------
-		// update radius
-		//--------------------------------------------
+      //--------------------------------------------
+      // update yaw & pitch
+      //--------------------------------------------
 
-		//manual orbit
-		if(trigPressed)
-		{
-			zoomToRadius(mDataBlock->radiusManual, mRadiusSpeed);
-		}
-
-		//forced radius
-		else if(mForcedRadiusOn)
-		{
-			zoomToRadius(mForcedRadius, mForcedRadiusSpeed);
-		}
-
-		//default radius
-		else
-		{
-			zoomToRadius(mDataBlock->radiusDefault, mRadiusSpeed);
-		}
-
-
-		//--------------------------------------------
-		// update yaw & pitch
-		//--------------------------------------------
-
-		//remember unlocked yaw & pitch in case we need them
-		VectorF unlockedVec = mPosition - mPlayerPos;
-		F32 unlockedYaw, unlockedPitch;
+      //remember unlocked yaw & pitch in case we need them
+      VectorF unlockedVec = mPosition - mPlayerPos;
+      F32 unlockedYaw, unlockedPitch;
       AAKUtils::getAnglesFromVector(unlockedVec, unlockedYaw, unlockedPitch);
 
-		//--------------------------------------------
-		// yaw
-		//--------------------------------------------
-		{
-			//manual orbit
-			if(trigPressed)
-			{
-				orbitToYaw(mYaw + move->yaw);
-			}
+      //--------------------------------------------
+      // yaw
+      //--------------------------------------------
+      {
+         //manual orbit
+         if (trigPressed)
+         {
+            orbitToYaw(mYaw + move->yaw);
+         }
 
-			//orbit to forced yaw angle
-			else if(mForcedYawOn)
-			{
-				orbitToYaw(mForcedYaw, mForcedYawSpeed);
-			}
+         //orbit to forced yaw angle
+         else if (mForcedYawOn)
+         {
+            orbitToYaw(mForcedYaw, mForcedYawSpeed);
+         }
 
-			// orbit to player's back
-			else if(mPlayerObject->mClimbState.active
-				|| mPlayerObject->mWallHugState.active
-				|| mPlayerObject->mLedgeState.active)
-			{
-				orbitToYaw(mPlayerForwardYaw + M_PI_F, 3.0f);
-			}
+         // orbit to player's back
+         else if (mPlayerObject->mClimbState.active
+            || mPlayerObject->mWallHugState.active
+            || mPlayerObject->mLedgeState.active)
+         {
+            orbitToYaw(mPlayerForwardYaw + M_PI_F, 3.0f);
+         }
 
-			//experimental "autoYaw"
-			else if(mAutoYaw)
-			{
-				orbitToYaw(findAutoYaw(), 0.5f);
-			}
+         //experimental "autoYaw"
+         else if (mAutoYaw)
+         {
+            orbitToYaw(findAutoYaw(), 0.5f);
+         }
 
-			//allow yaw to change freely
-			else
-			{
-				orbitToYaw(unlockedYaw);
-			}
-		}
+         //allow yaw to change freely
+         else
+         {
+            orbitToYaw(unlockedYaw);
+         }
+      }
 
-		//--------------------------------------------
-		// pitch
-		//--------------------------------------------
-		{
-			//manual orbit
-			if(trigPressed)
-			{
-				orbitToPitch(mPitch + move->pitch);
-			}
+      //--------------------------------------------
+      // pitch
+      //--------------------------------------------
+      {
+         //manual orbit
+         if (trigPressed)
+         {
+            orbitToPitch(mPitch + move->pitch);
+         }
 
-			//orbit to forced pitch angle, keep yaw
-			else if(mForcedPitchOn)
-			{
-				orbitToPitch(mForcedPitch, mForcedPitchSpeed);
-			}
+         //orbit to forced pitch angle, keep yaw
+         else if (mForcedPitchOn)
+         {
+            orbitToPitch(mForcedPitch, mForcedPitchSpeed);
+         }
 
-			// orbit to player's back
-			else if(mPlayerObject->mClimbState.active ||
-				mPlayerObject->mWallHugState.active ||
-				mPlayerObject->mLedgeState.active)
-			{
-				orbitToPitch(0.0f, 3.0f);
-			}
+         // orbit to player's back
+         else if (mPlayerObject->mClimbState.active ||
+            mPlayerObject->mWallHugState.active ||
+            mPlayerObject->mLedgeState.active)
+         {
+            orbitToPitch(0.0f, 3.0f);
+         }
 
-			//allow pitch to change freely
-			else
-			{
-				orbitToPitch(unlockedPitch);
-				autoPitch();
-			}
-		}
-
-
-		//--------------------------------------------
-		// avoid obstructions
-		//--------------------------------------------
-		if((!mPlayerObject->mClimbState.active
-			&& !mPlayerObject->mWallHugState.active
-			&& !mPlayerObject->mLedgeState.active
-			&& !trigPressed)
-			&& (!mForcedYawOn || !mForcedPitchOn))
-		{
-			//at least one axis is unlocked, so we could
-			//try to resolve any potential obstructions
-
-			//check for obstructions
-			Point3F finalPos = getFinalPosition(mYaw, mPitch);
-			if(!viewClear(finalPos))
-			{
-				//okay something is between us and the player
-				if(!mForcedYawOn && mForcedPitchOn)
-				{
-					//we can only solve with yaw
-					F32 newYaw;
-					if(findClearYaw(&newYaw))
-						orbitToYaw(newYaw);
-				}
-
-				if(!mForcedPitchOn && mForcedYawOn)
-				{
-					//we can only solve with pitch
-					F32 newPitch;
-					if(findClearPitch(&newPitch))
-						orbitToPitch(newPitch);
-				}
-				
-				if(!mForcedYawOn && !mForcedPitchOn)
-				{
-					//we have full freedom to resolve
-
-					F32 newYaw, newPitch;
-					bool foundClearYaw = findClearYaw(&newYaw);
-					bool foundClearPitch = findClearPitch(&newPitch);
-
-					//determine if camera itself is inside geometry
-					RayInfo rInfo;
-					bool camInside = getContainer()->castRay(finalPos, mPlayerPos, StaticObjectType, &rInfo) && rInfo.t == 0;
-
-					//if camera is inside geometry, prefer to solve with pitch (I'm not
-					//sure why this heuristic is "right" - but pitch seems to resolve
-					//the back-into-wall scenario in a more pleasing way than yaw)
-					if(camInside && foundClearPitch)
-					{
-						orbitToPitch(newPitch);
-					}
-
-					//if both methods found solutions, choose
-					//whichever solution requires the least change
-					if(foundClearYaw && foundClearPitch)
-					{
-						F32 yawDiff = mYaw - newYaw;
-						if (yawDiff < -M_PI_F)
-							yawDiff += M_2PI_F;
-						if (yawDiff > M_PI_F)
-							yawDiff -= M_2PI_F;
-
-						F32 pitchDiff = mPitch - newPitch;
-						if (pitchDiff < -M_PI_F)
-							pitchDiff += M_2PI_F;
-						if (pitchDiff > M_PI_F)
-							pitchDiff -= M_2PI_F;
-
-						if(mFabs(pitchDiff) <= mFabs(yawDiff))
-						{
-							//use pitch
-							orbitToPitch(newPitch);
-						}
-						else
-						{
-							//use yaw
-							orbitToYaw(newYaw);
-						}
-					}
-					
-					//otherwise just solve with the one that found a solution
-					else if(foundClearPitch)
-					{
-						orbitToPitch(newPitch);
-					}
-					else if(foundClearYaw)
-					{
-						orbitToYaw(newYaw);
-					}
-					else
-					{
-						//we failed to find a solution
-
-						//this can happen when the player is surrounded
-						//by geometry such that neither yaw (on current pitch)
-						//or pitch (on current yaw) can fix it. We could try
-						//searching the whole sphere of solutions here...
-					}
-				}
-			}
-		}
-
-		//--------------------------------------------
-		//look toward player
-		//--------------------------------------------
-		mRot.x = mPitch;
-		mRot.z = mYaw + M_PI_F;
+         //allow pitch to change freely
+         else
+         {
+            orbitToPitch(unlockedPitch);
+            autoPitch();
+         }
+      }
 
 
-		#ifdef ENABLE_DEBUGDRAW
+      //--------------------------------------------
+      // avoid obstructions
+      //--------------------------------------------
+      if ((!mPlayerObject->mClimbState.active
+         && !mPlayerObject->mWallHugState.active
+         && !mPlayerObject->mLedgeState.active
+         && !trigPressed)
+         && (!mForcedYawOn || !mForcedPitchOn))
+      {
+         //at least one axis is unlocked, so we could
+         //try to resolve any potential obstructions
+
+         //check for obstructions
+         Point3F finalPos = getFinalPosition(mYaw, mPitch);
+         if (!viewClear(finalPos))
+         {
+            //okay something is between us and the player
+            if (!mForcedYawOn && mForcedPitchOn)
+            {
+               //we can only solve with yaw
+               F32 newYaw;
+               if (findClearYaw(&newYaw))
+                  orbitToYaw(newYaw);
+            }
+
+            if (!mForcedPitchOn && mForcedYawOn)
+            {
+               //we can only solve with pitch
+               F32 newPitch;
+               if (findClearPitch(&newPitch))
+                  orbitToPitch(newPitch);
+            }
+
+            if (!mForcedYawOn && !mForcedPitchOn)
+            {
+               //we have full freedom to resolve
+
+               F32 newYaw, newPitch;
+               bool foundClearYaw = findClearYaw(&newYaw);
+               bool foundClearPitch = findClearPitch(&newPitch);
+
+               //determine if camera itself is inside geometry
+               RayInfo rInfo;
+               bool camInside = getContainer()->castRay(finalPos, mPlayerPos, StaticObjectType, &rInfo) && rInfo.t == 0;
+
+               //if camera is inside geometry, prefer to solve with pitch (I'm not
+               //sure why this heuristic is "right" - but pitch seems to resolve
+               //the back-into-wall scenario in a more pleasing way than yaw)
+               if (camInside && foundClearPitch)
+               {
+                  orbitToPitch(newPitch);
+               }
+
+               //if both methods found solutions, choose
+               //whichever solution requires the least change
+               if (foundClearYaw && foundClearPitch)
+               {
+                  F32 yawDiff = mYaw - newYaw;
+                  if (yawDiff < -M_PI_F)
+                     yawDiff += M_2PI_F;
+                  if (yawDiff > M_PI_F)
+                     yawDiff -= M_2PI_F;
+
+                  F32 pitchDiff = mPitch - newPitch;
+                  if (pitchDiff < -M_PI_F)
+                     pitchDiff += M_2PI_F;
+                  if (pitchDiff > M_PI_F)
+                     pitchDiff -= M_2PI_F;
+
+                  if (mFabs(pitchDiff) <= mFabs(yawDiff))
+                  {
+                     //use pitch
+                     orbitToPitch(newPitch);
+                  }
+                  else
+                  {
+                     //use yaw
+                     orbitToYaw(newYaw);
+                  }
+               }
+
+               //otherwise just solve with the one that found a solution
+               else if (foundClearPitch)
+               {
+                  orbitToPitch(newPitch);
+               }
+               else if (foundClearYaw)
+               {
+                  orbitToYaw(newYaw);
+               }
+               else
+               {
+                  //we failed to find a solution
+
+                  //this can happen when the player is surrounded
+                  //by geometry such that neither yaw (on current pitch)
+                  //or pitch (on current yaw) can fix it. We could try
+                  //searching the whole sphere of solutions here...
+               }
+            }
+         }
+      }
+
+      //--------------------------------------------
+      //look toward player
+      //--------------------------------------------
+      mRot.x = mPitch;
+      mRot.z = mYaw + M_PI_F;
+
+
+#ifdef ENABLE_DEBUGDRAW
       if (sRenderCameraGoalRays)
       {
          DebugDrawer::get()->drawBox(mPlayerPos - Point3F(.1f, .1f, .1f), mPlayerPos + Point3F(.1f, .1f, .1f), ColorI::GREEN);
@@ -575,21 +621,39 @@ void CameraGoalPlayer::processTick(const Move* move)
          DebugDrawer::get()->drawLine(mPlayerPos, mPosition, ColorI::GREEN);
          DebugDrawer::get()->setLastTTL(TickMs);
       }
-		#endif
-	}
+#endif
+   }
 
-	// If on the client, calc delta for backstepping
-	if (isClientObject()) 
-	{
-		delta.pos = mPosition;
-		delta.rot = mRot;
-		delta.posVec = delta.posVec - delta.pos;
-		delta.rotVec = delta.rotVec - delta.rot;
-	}
+   if (mHasLookAt)
+   {
+      //override our rotation to look at the object or position
+      Point3F targetPosition = mLookAtPosition;
 
-	delta.move = *move;
+      if (mLookAtObject)
+         targetPosition = mLookAtObject->getPosition();
 
-	setPosition(mPosition, mRot);
+      VectorF cameraVector = targetPosition - mPosition;
+
+      //Re-zero based on our mainline vector between the player and target
+      F32 yaw, pitch;
+      AAKUtils::getAnglesFromVector(cameraVector, yaw, pitch);
+
+      mRot.x = pitch;
+      mRot.z = yaw;
+   }
+
+   // If on the client, calc delta for backstepping
+   if (isClientObject())
+   {
+      delta.pos = mPosition;
+      delta.rot = mRot;
+      delta.posVec = delta.posVec - delta.pos;
+      delta.rotVec = delta.rotVec - delta.rot;
+   }
+
+   delta.move = *move;
+
+   setPosition(mPosition, mRot);
 }
 
 //-------------------------------------------------------------------
@@ -1219,6 +1283,24 @@ U32 CameraGoalPlayer::packUpdate(NetConnection *con, U32 mask, BitStream *bstrea
 		bstream->write(mAutoYaw);
 	}
 
+   if (bstream->writeFlag(mask & LookAtMask))
+   {
+      if (bstream->writeFlag(mHasLookAt))
+      {
+         mathWrite(*bstream, mLookAtPosition);
+
+         if (bstream->writeFlag(mLookAtObject != nullptr))
+         {
+            S32 id = con->getGhostIndex(mLookAtObject);
+            bstream->write(id);
+
+            //hack to keep sending updates until player is ghosted
+            if (id == -1)
+               setMaskBits(LookAtMask);
+         }
+      }
+   }
+
 	return retMask;
 }
 
@@ -1272,6 +1354,32 @@ void CameraGoalPlayer::unpackUpdate(NetConnection *con, BitStream *bstream)
 
 		bstream->read(&mAutoYaw);
 	}
+
+   //TargetMask
+   if (bstream->readFlag())
+   {
+      mHasLookAt = bstream->readFlag();
+      if (mHasLookAt)
+      {
+         mathRead(*bstream, &mLookAtPosition);
+
+         if (bstream->readFlag())
+         {
+            S32 id;
+            bstream->read(&id);
+            if (id > 0)
+            {
+               SceneObject* targetObject = static_cast<SceneObject*>(con->resolveGhost(id));
+               setLookAtObject(targetObject);
+            }
+         }
+         else
+         {
+            //make sure we clear the targetObject if we don't have one set on the server
+            setLookAtObject(nullptr);
+         }
+      }
+   }
 }
 
 void CameraGoalPlayer::setTransform(const MatrixF& mat)
@@ -1463,4 +1571,51 @@ void CameraGoalPlayer::setAutoYaw(bool on)
 DefineEngineMethod( CameraGoalPlayer, setAutoYaw, void, (bool autoYaw), (false), "(bool)")
 {
 	object->setAutoYaw(autoYaw);
+}
+
+bool CameraGoalPlayer::setLookAtObject(SceneObject* targetObj)
+{
+   mHasLookAt = true;
+   mLookAtObject = targetObj;
+   setMaskBits(LookAtMask);
+
+   return true;
+}
+
+DefineEngineMethod(CameraGoalPlayer, setLookAtObject, bool, (SceneObject* targetObj), (nullAsType<SceneObject*>()), "(SceneObject object)")
+{
+   if (targetObj == nullptr)
+   {
+      Con::errorf("CameraGoalTarget::setTargetObject - failed to find object");
+      return false;
+   }
+
+   return object->setLookAtObject(targetObj);
+}
+
+//===============================================================================
+
+void CameraGoalPlayer::setLookAtPosition(const Point3F& targetPos)
+{
+   mHasLookAt = true;
+   mLookAtPosition = targetPos;
+   setMaskBits(LookAtMask);
+}
+
+DefineEngineMethod(CameraGoalPlayer, setLookAtPosition, void, (Point3F targetPos), (Point3F::Zero), "(Point3F targetPos)")
+{
+   object->setLookAtPosition(targetPos);
+}
+
+void CameraGoalPlayer::clearLookAt()
+{
+   mLookAtObject = nullptr;
+   mLookAtPosition = Point3F::Zero;
+   mHasLookAt = false;
+   setMaskBits(LookAtMask);
+}
+
+DefineEngineMethod(CameraGoalPlayer, clearLookAt, void, (),, "()")
+{
+   object->clearLookAt();
 }

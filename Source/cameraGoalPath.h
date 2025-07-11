@@ -81,9 +81,9 @@ private:
 	F64 mT;					//current t value for this camera
 	U32 mPlayerPathIndex;	//the path used to read player position
 	U32 mCameraPathIndex;	//the path used to move this camera
-   AAKPlayer* mPlayerObject;	//the player object to track
+    AAKPlayer* mPlayerObject;	//the player object to track
 	bool mLookAtPlayer;
-
+    F32 mMaxRange;
 	void interpolateMat(F64 t, MatrixF* mat);
 	//void setT(F32 t);
 
@@ -95,10 +95,11 @@ public:
 	CameraGoalPath();
 	~CameraGoalPath();
 
+   static void consoleInit();
 	F32 getUpdatePriority(CameraScopeQuery *focusObject, U32 updateMask, S32 updateSkips);
 
 	bool setPlayerPathObject(SimPath::Path* obj);
-	bool setCameraPathObject(SimPath::Path* obj);
+	bool setCameraPathObject(SimPath::Path* obj, F32 maxRange = -1.0f);
 	bool setPlayerObject(AAKPlayer* obj);
 	void setLookAtPlayer(bool on);
 
@@ -108,6 +109,8 @@ public:
 	U32  packUpdate(NetConnection *, U32 mask, BitStream *stream);
 	void unpackUpdate(NetConnection *, BitStream *stream);
 	void onDeleteNotify(SimObject *obj);
+
+   DECLARE_CALLBACK(void, onLeaveRange, (GameBase* obj));
 };
 
 #endif

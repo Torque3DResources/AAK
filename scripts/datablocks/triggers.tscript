@@ -61,7 +61,7 @@ function SaveTrigger::onEnterTrigger(%this,%trigger,%obj)
    
    if(!%trigger.disabled)
    {
-      if(%obj.isMemberOfClass("AAKPlayer"))
+      if(%obj.isMemberOfClass("Player"))
       {
          %client = %obj.getControllingClient();
          
@@ -143,7 +143,7 @@ function KillTrigger::onEnterTrigger(%this,%trigger,%obj)
 {
    //Parent::onEnterTrigger(%this,%trigger,%obj);
    
-   if(%obj.isMemberOfClass("AAKPlayer"))
+   if(%obj.isMemberOfClass("Player"))
    {
       if(%trigger.nextCollision)
       {
@@ -244,6 +244,7 @@ function CameraTrigger_Player::onEnterTrigger(%this,%trigger,%obj)
 {
    //Parent::onEnterTrigger(%this,%trigger,%obj);
    %con = %obj.getControllingClient();
+   if (!%con) return;
    
    %currentGoal = %con.cameraGoalFollower.getGoalObject();
    if(%currentGoal == %con.cameraGoalPlayer)

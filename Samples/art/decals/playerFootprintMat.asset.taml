@@ -1,0 +1,17 @@
+<MaterialAsset
+    AssetName="PlayerFootprintMat"
+    materialDefinitionName="PlayerFootprintMat"
+    VersionId="1">
+    <Material
+        Name="PlayerFootprintMat"
+        mapTo="playerFootprintMat"
+        castShadows="false"
+        translucent="true"
+        alphaRef="0"
+        originalAssetName="PlayerFootprintMat">
+        <Material.Stages>
+            <Stages_beginarray
+                DiffuseMapAsset="AAK:footprint_image"/>
+        </Material.Stages>
+    </Material>
+</MaterialAsset>
