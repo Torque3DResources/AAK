@@ -232,6 +232,8 @@ function ActionAdventureGame::onPostSpawn(%this, %client)
       %client.client.cameraGoalFollower.setTransform(saveData.cameraGoalFollowerTransform);
       echo("Loaded autosave!");
    }*/
+   
+   %client.getEventManager().postEvent("postSpawnComplete",%client);
 }
 
 //-----------------------------------------------------------------------------
