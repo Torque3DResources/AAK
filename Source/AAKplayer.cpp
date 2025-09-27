@@ -399,6 +399,8 @@ bool AAKPlayerData::preload(bool server, String& errorStr)
       AssertFatal(actionCount <= NumActionAnims, "Too many action animations!");
       delete si;
    }
+
+   return true;
 }
 
 //Ubiq:
