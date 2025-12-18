@@ -62,10 +62,6 @@ function AAK::initClient(%this)
          $KeybindPath = "./Samples/scripts/client/defaultkeybinds." @ $TorqueScriptFileExtension;
          exec($KeybindPath);
          
-         %prefPath = getPrefpath();
-         if(isFile(%prefPath @ "/keybinds." @ $TorqueScriptFileExtension))
-            exec(%prefPath @ "/keybinds");
-         
          //gui
          //
 
