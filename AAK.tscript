@@ -35,6 +35,7 @@ function AAK::onCreateGameServer(%this)
    //Sample content
    if(IsDirectory(%this.getModulePath() @ "/Samples/"))
    {
+      $MaxSkinBones = 100;
       %this.registerDatablock("./Samples/scripts/datablocks/sounds");
       %this.registerDatablock("./Samples/scripts/datablocks/player");
       %this.registerDatablock("./Samples/scripts/datablocks/aiPlayer");
@@ -56,6 +57,7 @@ function AAK::initClient(%this)
 {
    if(IsDirectory(%this.getModulePath() @ "/Samples/"))
    {
+      $MaxSkinBones = 100;
       if (!$Server::Dedicated)
       {
          //client scripts
