@@ -275,10 +275,6 @@ protected:
 
    bool step(Point3F* pos, F32* maxStep, F32 time);
 
-   Point3F _move(const F32 travelTime, Collision* outCol);
-
-   F32 _doCollisionImpact(const Collision* collision, bool fallingCollision);
-
    void _findContact(SceneObject** contactObject,
       VectorF* contactNormal,
       Vector<SceneObject*>* outOverlapObjects);
