@@ -341,14 +341,46 @@ AAKPlayerData::AAKPlayerData() : PlayerData()
 	//Ubiq: Land state
 	landDuration = 100.0f;
 	landSpeedFactor = 0.5f;
-
+   mDynamicAnimsStart = NumTableActionAnims;
    dMemset(actionList, 0, sizeof(actionList));
 }
 
 bool AAKPlayerData::preload(bool server, String& errorStr)
 {
-   if (!Parent::preload(server, errorStr))
+   if (!ShapeBaseData::preload(server, errorStr))
       return false;
+
+   if (!server) {
+      for (U32 i = 0; i < MaxSounds; ++i)
+      {
+         if (!isPlayerSoundValid(i))
+         {
+            //return false; -TODO: trigger asset download
+         }
+      }
+   }
+   //
+   runSurfaceCos = mCos(mDegToRad(runSurfaceAngle));
+   jumpSurfaceCos = mCos(mDegToRad(jumpSurfaceAngle));
+   if (minJumpEnergy < jumpEnergyDrain)
+      minJumpEnergy = jumpEnergyDrain;
+
+   // Jetting
+   if (jetMinJumpEnergy < jetJumpEnergyDrain)
+      jetMinJumpEnergy = jetJumpEnergyDrain;
+
+   // Validate some of the data
+   if (fallingSpeedThreshold > 0.0f)
+      Con::printf("PlayerData:: Falling speed threshold should be downwards (negative)");
+
+   if (recoverDelay > (1 << RecoverDelayBits) - 1) {
+      recoverDelay = (1 << RecoverDelayBits) - 1;
+      Con::printf("PlayerData:: Recover delay exceeds range (0-%d)", recoverDelay);
+   }
+   if (jumpDelay > (1 << JumpDelayBits) - 1) {
+      jumpDelay = (1 << JumpDelayBits) - 1;
+      Con::printf("PlayerData:: Jump delay exceeds range (0-%d)", jumpDelay);
+   }
 
    //We'll override what PlayerData normally preloads for action animation lists with our own version
    if (getShape())
@@ -360,7 +392,7 @@ bool AAKPlayerData::preload(bool server, String& errorStr)
       // Extract ground transform velocity from animations
       // Get the named ones first so they can be indexed directly.
       ActionAnimation* dp = &actionList[0];
-      for (int i = 0; i < NumTableActionAnims; i++, dp++)
+      for (S32 i = 0; i < mDynamicAnimsStart; i++, dp++)
       {
          ActionAnimationDef* sp = &ActionAnimationList[i];
          dp->name = sp->name;
@@ -385,7 +417,7 @@ bool AAKPlayerData::preload(bool server, String& errorStr)
          if (dStricmp(sp->name, "jet") != 0)
             AssertWarn(dp->sequence != -1, avar("PlayerData::preload - Unable to find named animation sequence '%s'!", sp->name));
       }
-      for (int b = 0; b < getShape()->sequences.size(); b++)
+      for (S32 b = 0; b < getShape()->sequences.size(); b++)
       {
          if (!isTableSequence(b))
          {
@@ -398,8 +430,104 @@ bool AAKPlayerData::preload(bool server, String& errorStr)
       actionCount = dp - actionList;
       AssertFatal(actionCount <= NumActionAnims, "Too many action animations!");
       delete si;
+
+      // Resolve lookAction index
+      dp = &actionList[0];
+      String lookName("look");
+      for (S32 c = 0; c < actionCount; c++, dp++)
+         if (dStricmp(dp->name, lookName) == 0)
+            lookAction = c;
+
+      // Resolve spine
+      spineNode[0] = getShape()->findNode("Bip01 Pelvis");
+      spineNode[1] = getShape()->findNode("Bip01 Spine");
+      spineNode[2] = getShape()->findNode("Bip01 Spine1");
+      spineNode[3] = getShape()->findNode("Bip01 Spine2");
+      spineNode[4] = getShape()->findNode("Bip01 Neck");
+      spineNode[5] = getShape()->findNode("Bip01 Head");
+
+      // Recoil animations
+      recoilSequence[0] = getShape()->findSequence("light_recoil");
+      recoilSequence[1] = getShape()->findSequence("medium_recoil");
+      recoilSequence[2] = getShape()->findSequence("heavy_recoil");
    }
 
+   // Convert pickupRadius to a delta of boundingBox
+   //
+   // NOTE: it is not really correct to precalculate a pickupRadius based 
+   // on boxSize since the actual player's bounds can vary by "pose".
+   //
+   F32 dr = (boxSize.x > boxSize.y) ? boxSize.x : boxSize.y;
+   if (pickupRadius < dr)
+      pickupRadius = dr;
+   else
+      if (pickupRadius > 2.0f * dr)
+         pickupRadius = 2.0f * dr;
+   pickupDelta = (S32)(pickupRadius - dr);
+
+   // Validate jump speed
+   if (maxJumpSpeed <= minJumpSpeed)
+      maxJumpSpeed = minJumpSpeed + 0.1f;
+
+   // Load up all the emitters
+   if (!footPuffEmitter && footPuffID != 0)
+      if (!Sim::findObject(footPuffID, footPuffEmitter))
+         Con::errorf(ConsoleLogEntry::General, "PlayerData::preload - Invalid packet, bad datablockId(footPuffEmitter): 0x%x", footPuffID);
+
+   if (!decalData && decalID != 0)
+      if (!Sim::findObject(decalID, decalData))
+         Con::errorf(ConsoleLogEntry::General, "PlayerData::preload Invalid packet, bad datablockId(decalData): 0x%x", decalID);
+
+   if (!dustEmitter && dustID != 0)
+      if (!Sim::findObject(dustID, dustEmitter))
+         Con::errorf(ConsoleLogEntry::General, "PlayerData::preload - Invalid packet, bad datablockId(dustEmitter): 0x%x", dustID);
+
+   for (S32 i = 0; i < NUM_SPLASH_EMITTERS; i++)
+      if (!splashEmitterList[i] && splashEmitterIDList[i] != 0)
+         if (Sim::findObject(splashEmitterIDList[i], splashEmitterList[i]) == false)
+            Con::errorf(ConsoleLogEntry::General, "PlayerData::onAdd - Invalid packet, bad datablockId(particle emitter): 0x%x", splashEmitterIDList[i]);
+   /*
+   // First person mounted image shapes.
+   for (U32 i = 0; i < ShapeBase::MaxMountedImages; ++i)
+   {
+      bool shapeError = false;
+
+      if (mShapeFPAsset[i].notNull())
+      {
+         if (!getShapeFP(i))
+         {
+            errorStr = String::ToString("PlayerData: Couldn't load mounted image %d shape \"%s\"", i, _getShapeFPAssetId(i));
+            return false;
+         }
+
+         if (!server && !getShapeFP(i)->preloadMaterialList(getShapeFPFile(i)) && NetConnection::filesWereDownloaded())
+            shapeError = true;
+
+         if (computeCRC)
+         {
+            Con::printf("Validation required for mounted image %d shape: %s", i, _getShapeFPAssetId(i));
+
+            Torque::FS::FileNodeRef    fileRef = Torque::FS::GetFileNode(getShapeFPFile(i));
+
+            if (!fileRef)
+            {
+               errorStr = String::ToString("PlayerData: Mounted image %d loading failed, shape \"%s\" is not found.", i, getShapeFPFile(i));
+               return false;
+            }
+
+            if (server)
+               mCRCFP[i] = fileRef->getChecksum();
+            else if (mCRCFP[i] != fileRef->getChecksum())
+            {
+               errorStr = String::ToString("PlayerData: Mounted image %d shape \"%s\" does not match version on server.", i, _getShapeFPAssetId(i));
+               return false;
+            }
+         }
+
+         mValidShapeFP[i] = true;
+      }
+   }
+   */
    return true;
 }
 
@@ -1065,22 +1193,6 @@ void AAKPlayer::setState(ActionState state, U32 recoverTicks)
       if (isProperlyAdded()) {
          switch (state) {
             case RecoverState: {
-               //Ubiq: removing these - we use our own landing system
-               /*if (mDataBlock->landSequenceTime > 0.0f)
-               {
-                  // Use the land sequence as the basis for the recovery
-                  setActionThread(AAKPlayerData::LandAnim, true, false, true, true);
-                  F32 timeScale = mShapeInstance->getDuration(mActionAnimation.thread) / mDataBlock->landSequenceTime;
-                  mShapeInstance->setTimeScale(mActionAnimation.thread,timeScale);
-                  mRecoverDelay =  mDataBlock->landSequenceTime;
-               }
-               else
-               {
-                  // Legacy recover system
-                  mRecoverTicks = recoverTicks;
-                  mReversePending = U32(F32(mRecoverTicks) / sLandReverseScale);
-                  setActionThread(AAKPlayerData::LandAnim, true, false, true, true);
-               }*/
                break;
             }
             
@@ -1095,6 +1207,7 @@ void AAKPlayer::setState(ActionState state, U32 recoverTicks)
 
 void AAKPlayer::updateState()
 {
+   Parent::updateState();
    switch (mState)
    {
       case RecoverState:
@@ -1479,7 +1592,7 @@ void AAKPlayer::updateMove(const Move* move)
 
       // Cancel any script driven animations if we are going to move.
       if (!moveVec.isZero() &&
-         (mActionAnimation.action >= AAKPlayerData::NumTableActionAnims))
+         (mActionAnimation.action >= mDataBlock->mDynamicAnimsStart))
          mActionAnimation.action = AAKPlayerData::NullAnimation;
    }
    else
@@ -1525,13 +1638,13 @@ void AAKPlayer::updateMove(const Move* move)
 		//play the land animation
 		if(mJumpState.active && mJumpState.jumpType == JumpType_Run)
 		{	
-			setActionThread(AAKPlayerData::RunningLandAnim,true,false,true);
+			setActionThread(AAKPlayerData::RunningLandAnim,true,false,true,false,false,false);
 			mLandState.active = true;
 			mLandState.timer = mDataBlock->landDuration;
 		}
 		else
 		{
-			setActionThread(AAKPlayerData::StandingLandAnim,true,false,true);
+			setActionThread(AAKPlayerData::StandingLandAnim,true,false,true,false, false,false);
 			mLandState.active = true;
 			mLandState.timer = mDataBlock->landDuration;
 		}
@@ -1621,7 +1734,7 @@ void AAKPlayer::updateMove(const Move* move)
 
 				VectorF rotAxis;
 				mCross(mWallHugState.surfaceNormal, Point3F(0,0,1), &rotAxis);
-				rotAxis.normalize();
+				rotAxis.normalizeSafe();
 
 				//snap direction and choose appropriate speed
 				F32 pvDotSurface = mDot(pv, mWallHugState.surfaceNormal);
@@ -1929,7 +2042,7 @@ void AAKPlayer::updateMove(const Move* move)
 			Point3F pos = getLedgeUpPosition();
 			mObjToWorld.setColumn(3, pos);
 
-			setActionThread(AAKPlayerData::RootAnim,true,false,false);
+			setActionThread(AAKPlayerData::RootAnim,true,false,false,false,false,false);
 			mShapeInstance->clearTransition(mActionAnimation.thread);
 			mShapeInstance->animate(); //why is this necessary?
 
@@ -2167,7 +2280,7 @@ void AAKPlayer::updateMove(const Move* move)
       if(mJetting)
       {
          pvl = moveVec.len();
-         if (pvl)
+         if (pvl > POINT_EPSILON)
          {
             VectorF nn;
             mCross(pv,VectorF(0.0f, 0.0f, 0.0f),&nn);
@@ -2182,7 +2295,7 @@ void AAKPlayer::updateMove(const Move* move)
       {
          // We only do this if we're not using a physics library.  The
          // library will take care of itself.
-         if (pvl)
+         if (pvl > POINT_EPSILON)
          {
             VectorF nn;
             mCross(pv,VectorF(0.0f, 0.0f, 1.0f),&nn);
@@ -2195,7 +2308,7 @@ void AAKPlayer::updateMove(const Move* move)
       }
 
       // Convert to acceleration
-      if ( pvl )
+      if ( pvl > POINT_EPSILON)
          pv *= moveSpeed / pvl;
       VectorF runAcc = pv - (mVelocity + acc);
       F32 runSpeed = runAcc.len();
@@ -2226,7 +2339,7 @@ void AAKPlayer::updateMove(const Move* move)
 			&& mVelocity.len() > mDataBlock->walkRunAnimVelocity)
 		{
 			//play stop animation
-			setActionThread(AAKPlayerData::StopAnim,true,false,true);
+			setActionThread(AAKPlayerData::StopAnim,true,false,true,false,false,false);
 
 			//play sound effects on client
          if (isGhost()) SFX->playOnce(mDataBlock->getPlayerSoundProfile(AAKPlayerData::stop), &getTransform());
@@ -2251,7 +2364,7 @@ void AAKPlayer::updateMove(const Move* move)
       pv = moveVec;
       F32 pvl = pv.len();
 
-      if (pvl)
+      if (pvl > POINT_EPSILON)
          pv *= moveSpeed / pvl;
 
       VectorF runAcc = pv - (mVelocity + acc); //Ubiq: Lorne: TODO: Is this okay?
@@ -2323,7 +2436,7 @@ void AAKPlayer::updateMove(const Move* move)
       {
          F32 pvl = swimVec.len();
 
-         if ( true && pvl )
+         if ( true && pvl > POINT_EPSILON)
          {
             VectorF nn;
             mCross(swimVec,VectorF(0.0f, 0.0f, 1.0f),&nn);
@@ -2337,7 +2450,7 @@ void AAKPlayer::updateMove(const Move* move)
       F32 swimVecLen = swimVec.len();
 
       // Convert to acceleration.
-      if ( swimVecLen )
+      if ( swimVecLen > POINT_EPSILON)
          swimVec *= moveSpeed / swimVecLen;
       VectorF swimAcc = swimVec - (mVelocity + acc);
       F32 swimSpeed = swimAcc.len();
@@ -2458,7 +2571,7 @@ void AAKPlayer::updateMove(const Move* move)
 				
             //Force a specific velocity in the direction we're trying to move
             //This gives the jump some serious "oomph" even if we're barely moving
-            if (mVelocity.len() < mDataBlock->maxForwardSpeed)
+            if ((POINT_EPSILON < mVelocity.len()) && (mVelocity.len() < mDataBlock->maxForwardSpeed))
                mVelocity.normalize(mDataBlock->maxForwardSpeed);
 
             jumpVec.normalize(mVelocity.len());
@@ -2470,7 +2583,7 @@ void AAKPlayer::updateMove(const Move* move)
 
             //so each jump is more similar
             //(specifically prevents weak jumps when running downhill)
-            if(mVelocity.z < 0)
+            if(mVelocity.z < POINT_EPSILON)
                mVelocity.z = 0;
          }
 
@@ -3007,7 +3120,7 @@ void AAKPlayer::updateActionThread()
    {
       //The scripting language will get a call back when a script animation has finished...
       //  example: When the chat menu animations are done playing...
-      if (isServerObject() && mActionAnimation.action >= AAKPlayerData::NumTableActionAnims)
+      if (isServerObject() && mActionAnimation.action >= mDataBlock->mDynamicAnimsStart)
          mDataBlock->animationDone_callback(this, mActionAnimation.thread->getSequenceName().c_str());
       pickActionAnimation();
    }
@@ -3046,8 +3159,8 @@ void AAKPlayer::pickActionAnimation()
       // Go into root position unless something was set explicitly
       // from a script.
       if (mActionAnimation.action != AAKPlayerData::RootAnim &&
-          mActionAnimation.action < AAKPlayerData::NumTableActionAnims)
-         setActionThread(AAKPlayerData::RootAnim,true,false,false);
+          mActionAnimation.action < mDataBlock->mDynamicAnimsStart)
+         setActionThread(AAKPlayerData::RootAnim,true,false,false,false,false,false);
       return;
    }
 
@@ -3380,320 +3493,6 @@ bool AAKPlayer::step(Point3F *pos,F32 *maxStep,F32 time)
 	}
 
    return false;
-}
-
-//----------------------------------------------------------------------------
-Point3F AAKPlayer::_move( const F32 travelTime, Collision *outCol )
-{
-   // Try and move to new pos
-   F32 totalMotion  = 0.0f;
-   
-   // TODO: not used?
-   //F32 initialSpeed = mVelocity.len();
-
-   Point3F start;
-   Point3F initialPosition;
-   getTransform().getColumn(3,&start);
-   initialPosition = start;
-
-   static CollisionList collisionList;
-   static CollisionList physZoneCollisionList;
-
-   collisionList.clear();
-   physZoneCollisionList.clear();
-
-   MatrixF collisionMatrix(true);
-   collisionMatrix.setColumn(3, start);
-
-   VectorF firstNormal(0.0f, 0.0f, 0.0f);
-   F32 maxStep = mDataBlock->maxStepHeight;
-   F32 time = travelTime;
-   U32 count = 0;
-
-   const Point3F& scale = getScale();
-
-   static Polyhedron sBoxPolyhedron;
-   static ExtrudedPolyList sExtrudedPolyList;
-   static ExtrudedPolyList sPhysZonePolyList;
-
-   for (; count < sMoveRetryCount; count++) {
-      F32 speed = mVelocity.len();
-      if (!speed && !mDeath.haveVelocity())
-         break;
-
-      Point3F end = start + mVelocity * time;
-      if (mDeath.haveVelocity()) {
-         // Add in death movement-
-         VectorF  deathVel = mDeath.getPosAdd();
-         VectorF  resVel;
-         getTransform().mulV(deathVel, & resVel);
-         end += resVel;
-      }
-      Point3F distance = end - start;
-
-      if (mFabs(distance.x) < mObjBox.len_x() &&
-          mFabs(distance.y) < mObjBox.len_y() &&
-          mFabs(distance.z) < mObjBox.len_z())
-      {
-         // We can potentially early out of this.  If there are no polys in the clipped polylist at our
-         //  end position, then we can bail, and just set start = end;
-         Box3F wBox = mScaledBox;
-         wBox.minExtents += end;
-         wBox.maxExtents += end;
-
-         static EarlyOutPolyList eaPolyList;
-         eaPolyList.clear();
-         eaPolyList.mNormal.set(0.0f, 0.0f, 0.0f);
-         eaPolyList.mPlaneList.clear();
-         eaPolyList.mPlaneList.setSize(6);
-         eaPolyList.mPlaneList[0].set(wBox.minExtents,VectorF(-1.0f, 0.0f, 0.0f));
-         eaPolyList.mPlaneList[1].set(wBox.maxExtents,VectorF(0.0f, 1.0f, 0.0f));
-         eaPolyList.mPlaneList[2].set(wBox.maxExtents,VectorF(1.0f, 0.0f, 0.0f));
-         eaPolyList.mPlaneList[3].set(wBox.minExtents,VectorF(0.0f, -1.0f, 0.0f));
-         eaPolyList.mPlaneList[4].set(wBox.minExtents,VectorF(0.0f, 0.0f, -1.0f));
-         eaPolyList.mPlaneList[5].set(wBox.maxExtents,VectorF(0.0f, 0.0f, 1.0f));
-
-         // Build list from convex states here...
-         CollisionWorkingList& rList = mConvex.getWorkingList();
-         CollisionWorkingList* pList = rList.wLink.mNext;
-         while (pList != &rList) {
-            Convex* pConvex = pList->mConvex;
-            if (pConvex->getObject()->getTypeMask() & sCollisionMoveMask) {
-               Box3F convexBox = pConvex->getBoundingBox();
-               if (wBox.isOverlapped(convexBox))
-               {
-                  // No need to separate out the physical zones here, we want those
-                  //  to cause a fallthrough as well...
-                  pConvex->getPolyList(&eaPolyList);
-               }
-            }
-            pList = pList->wLink.mNext;
-         }
-
-         if (eaPolyList.isEmpty())
-         {
-            totalMotion += (end - start).len();
-            start = end;
-            break;
-         }
-      }
-
-      collisionMatrix.setColumn(3, start);
-      sBoxPolyhedron.buildBox(collisionMatrix, mScaledBox, true);
-
-      // Setup the bounding box for the extrudedPolyList
-      Box3F plistBox = mScaledBox;
-      collisionMatrix.mul(plistBox);
-      Point3F oldMin = plistBox.minExtents;
-      Point3F oldMax = plistBox.maxExtents;
-      plistBox.minExtents.setMin(oldMin + (mVelocity * time) - Point3F(0.1f, 0.1f, 0.1f));
-      plistBox.maxExtents.setMax(oldMax + (mVelocity * time) + Point3F(0.1f, 0.1f, 0.1f));
-
-      // Build extruded polyList...
-      VectorF vector = end - start;
-      sExtrudedPolyList.extrude(sBoxPolyhedron,vector);
-      sExtrudedPolyList.setVelocity(mVelocity);
-      sExtrudedPolyList.setCollisionList(&collisionList);
-
-      sPhysZonePolyList.extrude(sBoxPolyhedron,vector);
-      sPhysZonePolyList.setVelocity(mVelocity);
-      sPhysZonePolyList.setCollisionList(&physZoneCollisionList);
-
-      // Build list from convex states here...
-      CollisionWorkingList& rList = mConvex.getWorkingList();
-      CollisionWorkingList* pList = rList.wLink.mNext;
-      while (pList != &rList) {
-         Convex* pConvex = pList->mConvex;
-         if (pConvex->getObject()->getTypeMask() & sCollisionMoveMask) {
-            Box3F convexBox = pConvex->getBoundingBox();
-            if (plistBox.isOverlapped(convexBox))
-            {
-               if (pConvex->getObject()->getTypeMask() & PhysicalZoneObjectType)
-                  pConvex->getPolyList(&sPhysZonePolyList);
-               else
-                  pConvex->getPolyList(&sExtrudedPolyList);
-            }
-         }
-         pList = pList->wLink.mNext;
-      }
-
-      // Take into account any physical zones...
-      for (U32 j = 0; j < physZoneCollisionList.getCount(); j++) 
-      {
-         AssertFatal(dynamic_cast<PhysicalZone*>(physZoneCollisionList[j].object), "Bad phys zone!");
-         const PhysicalZone* pZone = (PhysicalZone*)physZoneCollisionList[j].object;
-         if (pZone->isActive())
-            mVelocity *= pZone->getVelocityMod();
-      }
-
-      if (collisionList.getCount() != 0 && collisionList.getTime() < 1.0f) 
-      {
-         // Set to collision point
-         F32 velLen = mVelocity.len();
-
-         F32 dt = time * getMin(collisionList.getTime(), 1.0f);
-         start += mVelocity * dt;
-         time -= dt;
-
-         totalMotion += velLen * dt;
-
-         bool wasFalling = mFalling;
-         mFalling = false;
-
-         // Back off...
-         if ( velLen > 0.f ) {
-            F32 newT = getMin(0.01f / velLen, dt);
-            start -= mVelocity * newT;
-            totalMotion -= velLen * newT;
-         }
-
-         // Try stepping if there is a vertical surface
-         if (collisionList.getMaxHeight() < start.z + mDataBlock->maxStepHeight * scale.z) 
-         {
-            bool stepped = false;
-            for (U32 c = 0; c < collisionList.getCount(); c++) 
-            {
-               const Collision& cp = collisionList[c];
-               // if (mFabs(mDot(cp.normal,VectorF(0,0,1))) < sVerticalStepDot)
-               //    Dot with (0,0,1) just extracts Z component [lh]-
-               if (mFabs(cp.normal.z) < sVerticalStepDot)
-               {
-                  stepped = step(&start,&maxStep,time);
-                  break;
-               }
-            }
-            if (stepped)
-            {
-               continue;
-            }
-         }
-
-         // Pick the surface most parallel to the face that was hit.
-         const Collision *collision = &collisionList[0];
-         const Collision *cp = collision + 1;
-         const Collision *ep = collision + collisionList.getCount();
-         for (; cp != ep; cp++)
-         {
-            if (cp->faceDot > collision->faceDot)
-               collision = cp;
-         }
-
-         F32 bd = _doCollisionImpact( collision, wasFalling );
-
-         // Copy this collision out so
-         // we can use it to do impacts
-         // and query collision.
-         *outCol = *collision;
-         if (isServerObject() && bd > 6.8f && collision->normal.z > 0.7f)
-         {
-            fx_s_triggers |= PLAYER_LANDING_S_TRIGGER;
-            setMaskBits(TriggerMask);
-         }
-
-         // Subtract out velocity
-		 //Ubiq: Lorne: use lower elasticity on ground than in air
-		 F32 elasticity = mContactTimer == 0 ? sNormalElasticity : sAirElasticity; 
-         VectorF dv = collision->normal * (bd + elasticity);
-         mVelocity += dv;
-         if (count == 0)
-         {
-            firstNormal = collision->normal;
-         }
-         else
-         {
-            if (count == 1)
-            {
-               // Re-orient velocity along the crease.
-               if (mDot(dv,firstNormal) < 0.0f &&
-                   mDot(collision->normal,firstNormal) < 0.0f)
-               {
-                  VectorF nv;
-                  mCross(collision->normal,firstNormal,&nv);
-                  F32 nvl = nv.len();
-                  if (nvl)
-                  {
-                     if (mDot(nv,mVelocity) < 0.0f)
-                        nvl = -nvl;
-                     nv *= mVelocity.len() / nvl;
-                     mVelocity = nv;
-                  }
-               }
-            }
-         }
-      }
-      else
-      {
-         totalMotion += (end - start).len();
-         start = end;
-         break;
-      }
-   }
-
-   if (count == sMoveRetryCount)
-   {
-      // Failed to move
-      start = initialPosition;
-      mVelocity.set(0.0f, 0.0f, 0.0f);
-   }
-
-   return start;
-}
-
-F32 AAKPlayer::_doCollisionImpact( const Collision *collision, bool fallingCollision)
-{
-   F32 bd = -mDot( mVelocity, collision->normal);
-
-   // shake camera on ground impact
-   if( bd > mDataBlock->groundImpactMinSpeed && isControlObject() )
-   {
-      F32 ampScale = (bd - mDataBlock->groundImpactMinSpeed) / mDataBlock->minImpactSpeed;
-
-      CameraShake *groundImpactShake = new CameraShake;
-      groundImpactShake->setDuration( mDataBlock->groundImpactShakeDuration );
-      groundImpactShake->setFrequency( mDataBlock->groundImpactShakeFreq );
-
-      VectorF shakeAmp = mDataBlock->groundImpactShakeAmp * ampScale;
-      groundImpactShake->setAmplitude( shakeAmp );
-      groundImpactShake->setFalloff( mDataBlock->groundImpactShakeFalloff );
-      groundImpactShake->init();
-      gCamFXMgr.addFX( groundImpactShake );
-   }
-
-   if ( ((bd > mDataBlock->minImpactSpeed && fallingCollision) || bd > mDataBlock->minLateralImpactSpeed) 
-      && !mMountPending )
-   {
-      if (!isGhost())
-      {
-         onImpact(collision->object, collision->normal * bd);
-         mImpactSound = AAKPlayerData::ImpactNormal;
-         setMaskBits(ImpactMask);
-      }
-
-      if (mDamageState == Enabled && mState != RecoverState) 
-      {
-         // Scale how long we're down for
-         //Ubiq: removing these - we use our own landing system
-         /*if (mDataBlock->landSequenceTime > 0.0f)
-         {
-            // Recover time is based on the land sequence
-            setState(RecoverState);
-         }
-         else
-         {
-            // Legacy recover system
-            F32   value = (bd - mDataBlock->minImpactSpeed);
-            F32   range = (mDataBlock->minImpactSpeed * 0.9f);
-            U32   recover = mDataBlock->recoverDelay;
-            if (value < range)
-               recover = 1 + S32(mFloor( F32(recover) * value / range) );
-            //Con::printf("Used %d recover ticks", recover);
-            //Con::printf("  minImpact = %g, this one = %g", mDataBlock->minImpactSpeed, bd);
-            setState(RecoverState, recover);
-         }*/
-      }
-   }
-
-   return bd;
 }
 
 //----------------------------------------------------------------------------
