@@ -159,7 +159,6 @@ struct AAKPlayerData: public PlayerData {
       NullAnimation = (1 << ActionAnimBits) - 1
    };
    static ActionAnimationDef ActionAnimationList[NumTableActionAnims];
-   ActionAnimation actionList[NumActionAnims];
 
    DECLARE_CONOBJECT(AAKPlayerData);
    AAKPlayerData();

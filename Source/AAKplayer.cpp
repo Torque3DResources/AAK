@@ -342,7 +342,6 @@ AAKPlayerData::AAKPlayerData() : PlayerData()
 	landDuration = 100.0f;
 	landSpeedFactor = 0.5f;
    mDynamicAnimsStart = NumTableActionAnims;
-   dMemset(actionList, 0, sizeof(actionList));
 }
 
 bool AAKPlayerData::preload(bool server, String& errorStr)
