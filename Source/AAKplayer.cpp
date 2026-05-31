@@ -351,10 +351,14 @@ bool AAKPlayerData::preload(bool server, String& errorStr)
       return false;
 
    //We'll override what PlayerData normally preloads for action animation lists with our own version
-   if (getShape())
+   Resource<TSShape> shape;
+   if (shapeAssetRef.notNull())
+      shape = shapeAssetRef.assetPtr->getShapeResource();
+
+   if (shape)
    {
       // Go ahead a pre-load the player shape
-      TSShapeInstance* si = new TSShapeInstance(getShape(), false);
+      TSShapeInstance* si = new TSShapeInstance(shape, false);
       TSThread* thread = si->addThread();
 
       // Extract ground transform velocity from animations
@@ -365,7 +369,7 @@ bool AAKPlayerData::preload(bool server, String& errorStr)
          ActionAnimationDef* sp = &ActionAnimationList[i];
          dp->name = sp->name;
          dp->dir.set(sp->dir.x, sp->dir.y, sp->dir.z);
-         dp->sequence = getShape()->findSequence(sp->name);
+         dp->sequence = shape->findSequence(sp->name);
 
          // If this is a sprint action and is missing a sequence, attempt to use
          // the standard run ones.
@@ -373,7 +377,7 @@ bool AAKPlayerData::preload(bool server, String& errorStr)
          {
             S32 offset = i - SprintRootAnim;
             ActionAnimationDef* standDef = &ActionAnimationList[RootAnim + offset];
-            dp->sequence = getShape()->findSequence(standDef->name);
+            dp->sequence = shape->findSequence(standDef->name);
          }
 
          dp->velocityScale = true;
@@ -385,12 +389,12 @@ bool AAKPlayerData::preload(bool server, String& errorStr)
          if (dStricmp(sp->name, "jet") != 0)
             AssertWarn(dp->sequence != -1, avar("PlayerData::preload - Unable to find named animation sequence '%s'!", sp->name));
       }
-      for (int b = 0; b < getShape()->sequences.size(); b++)
+      for (int b = 0; b < shape->sequences.size(); b++)
       {
          if (!isTableSequence(b))
          {
             dp->sequence = b;
-            dp->name = getShape()->getName(getShape()->sequences[b].nameIndex);
+            dp->name = shape->getName(shape->sequences[b].nameIndex);
             dp->velocityScale = false;
             getGroundInfo(si, thread, dp++);
          }
@@ -4466,10 +4470,15 @@ void AAKPlayer::updateFroth( F32 dt )
 //-------------------------------------------------------------------
 Point3F AAKPlayer::getNodePosition(const char *nodeName)
 {
+   if (!mDataBlock || mDataBlock->shapeAssetRef.isNull())
+      return Point3F::Zero;
+
+   Resource<TSShape> shape = mDataBlock->shapeAssetRef.assetPtr->getShapeResource();
+
 	const MatrixF& mat = this->getTransform();
 	Point3F nodePoint;
 	MatrixF nodeMat;
-	S32 ni = mDataBlock->getShape()->findNode(nodeName);
+	S32 ni = shape->findNode(nodeName);
 	AssertFatal(ni >= 0, "ShapeBase::getNodePosition() - couldn't find node!");
 	nodeMat = mShapeInstance->mNodeTransforms[ni];
 	nodePoint = nodeMat.getPosition();
