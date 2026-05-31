@@ -158,9 +158,7 @@ struct AAKPlayerData: public PlayerData {
       ActionAnimBits = 9,
       NullAnimation = (1 << ActionAnimBits) - 1
    };
-
    static ActionAnimationDef ActionAnimationList[NumTableActionAnims];
-   ActionAnimation actionList[NumActionAnims];
 
    DECLARE_CONOBJECT(AAKPlayerData);
    AAKPlayerData();
@@ -274,10 +272,6 @@ protected:
    void findContact(bool* run, bool* jump, bool* slide, VectorF* contactNormal);
 
    bool step(Point3F* pos, F32* maxStep, F32 time);
-
-   Point3F _move(const F32 travelTime, Collision* outCol);
-
-   F32 _doCollisionImpact(const Collision* collision, bool fallingCollision);
 
    void _findContact(SceneObject** contactObject,
       VectorF* contactNormal,
