@@ -26,6 +26,7 @@ function AAK::initServer(%this)
 	if(isToolBuild())
    {
       %this.queueExec("./tools/debugging");
+      %this.queueExec("./tools/cameraCommands");
    }
 }
 

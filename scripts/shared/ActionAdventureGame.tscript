@@ -221,6 +221,8 @@ function ActionAdventureGame::onPostSpawn(%this, %client)
    %client.setControlObject(%client.player);
    %client.setFirstPerson(false);
    
+   $editorCameraMode = "AAK Camera";
+   
    /*if(isObject(saveData))
    {
       //load successful, use saveData
