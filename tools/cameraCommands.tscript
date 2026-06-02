@@ -1,0 +1,42 @@
+function AAK::onCameraModesListWake(%this, %cameraModesListObj)
+{
+   %cameraModesListObj.add( "AAK Camera" );
+}
+
+function AAK::onCameraModesListSelect(%this, %text)
+{
+   switch$(%text)
+   {
+      case "AAK Camera":
+         commandToServer( 'SetEditorAAKCamera' );
+         //EditorGui.setDisplayType( $EditTsCtrl::DisplayTypePerspective ); 
+   }
+}
+
+function serverCmdSetEditorAAKCamera(%client)
+{
+   // Switch to Fly Mode
+   %client.camera.newtonMode = "0";
+   %client.camera.newtonRotation = "0";
+   
+   if(%client.cameraGoalFollower != %client.getCameraObject() && %client.player != %client.getControlObject())
+   {
+      %client.lastCameraObject = %client.getCameraObject();
+      %client.lastControlObject = %client.getControlObject();
+   } 
+   
+   %client.setCameraObject(%client.cameraGoalFollower);
+   %client.setControlObject(%client.player);
+   
+   $editorCameraMode = "AAK Camera";
+   ServerConnection.setFirstPerson(false);
+   
+   //clientCmdSyncEditorGui();
+   EditorGui-->trdPersonCamera.setStateOn(true);
+   EWorldEditorToggleCamera.setBitmap("ToolsModule:3rd_person_camera_n_image");
+   %flyModeRadioItem = 1;
+   //quick way select menu bar options
+   EditorGui.findMenu( "Camera" ).checkRadioItem( 0, 1, 1 );
+   EditorPlayerCameraTypeOptions.checkRadioItem( 0, 2, %flyModeRadioItem);
+   EditorGuiStatusBar.setCamera($editorCameraMode);
+}
