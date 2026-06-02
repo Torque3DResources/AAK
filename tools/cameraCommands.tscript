@@ -21,10 +21,6 @@ function serverCmdSetEditorAAKCamera(%client)
    
    if(%client.cameraGoalFollower != %client.getCameraObject() && %client.player != %client.getControlObject())
    {
-      echo("serverCmdSetEditorAAKCamera set the cam and control objects!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-      echo("    cam: " @ %client.getCameraObject());
-      echo("    control: " @ %client.getControlObject());
-      
       %client.lastCameraObject = %client.getCameraObject();
       %client.lastControlObject = %client.getControlObject();
    } 
