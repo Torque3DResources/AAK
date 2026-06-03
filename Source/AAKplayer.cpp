@@ -443,17 +443,17 @@ bool AAKPlayerData::preload(bool server, String& errorStr)
             lookAction = c;
 
       // Resolve spine
-      spineNode[0] = getShape()->findNode("Bip01 Pelvis");
-      spineNode[1] = getShape()->findNode("Bip01 Spine");
-      spineNode[2] = getShape()->findNode("Bip01 Spine1");
-      spineNode[3] = getShape()->findNode("Bip01 Spine2");
-      spineNode[4] = getShape()->findNode("Bip01 Neck");
-      spineNode[5] = getShape()->findNode("Bip01 Head");
+      spineNode[0] = shape->findNode("Bip01 Pelvis");
+      spineNode[1] = shape->findNode("Bip01 Spine");
+      spineNode[2] = shape->findNode("Bip01 Spine1");
+      spineNode[3] = shape->findNode("Bip01 Spine2");
+      spineNode[4] = shape->findNode("Bip01 Neck");
+      spineNode[5] = shape->findNode("Bip01 Head");
 
       // Recoil animations
-      recoilSequence[0] = getShape()->findSequence("light_recoil");
-      recoilSequence[1] = getShape()->findSequence("medium_recoil");
-      recoilSequence[2] = getShape()->findSequence("heavy_recoil");
+      recoilSequence[0] = shape->findSequence("light_recoil");
+      recoilSequence[1] = shape->findSequence("medium_recoil");
+      recoilSequence[2] = shape->findSequence("heavy_recoil");
    }
 
    // Convert pickupRadius to a delta of boundingBox
