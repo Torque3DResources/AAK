@@ -1621,7 +1621,12 @@ void AAKPlayer::updateMove(const Move* move)
    if (mJumpSurface)
       mJumpSurfaceNormal = contactNormal;
    if (!mClimbState.active && !mLedgeState.active)
-      acc = VectorF(0.0f, 0.0f, mNetGravity / (1.0 - mBuoyancy) * TickSec);
+   {
+      F32 invBuoyancy = (1.0 - mBuoyancy);
+      if (mFabs(invBuoyancy) < POINT_EPSILON)
+         invBuoyancy = POINT_EPSILON;
+      acc = VectorF(0.0f, 0.0f, mNetGravity / invBuoyancy * TickSec);
+   }
    if (getParent() != NULL)
       acc = VectorF::Zero;
 
